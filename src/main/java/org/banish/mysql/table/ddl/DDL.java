@@ -142,8 +142,13 @@ public class DDL {
 	/**
 	 * 设置自增ID
 	 */
-	public final static String SET_AUTO_INCREMENT = "ALTER TABLE `#tableName#` AUTO_INCREMENT=?;";
+	private final static String SET_AUTO_INCREMENT = "ALTER TABLE `%s` AUTO_INCREMENT=%s;";
 
+	public static String setAutoIncrement(String tableName, long autoinc) {
+		String sql = String.format(SET_AUTO_INCREMENT, tableName, autoinc);
+		return sql;
+	}
+	
 	/**
 	 * mysql5.x用这种方式来查自增主键
 	 */

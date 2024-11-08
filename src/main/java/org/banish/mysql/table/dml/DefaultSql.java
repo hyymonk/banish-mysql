@@ -4,6 +4,7 @@
 package org.banish.mysql.table.dml;
 
 
+import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.column.ColumnMeta;
 
@@ -11,7 +12,7 @@ import org.banish.mysql.orm.column.ColumnMeta;
  * @author YY
  *
  */
-public class DefaultSql<T> implements ISql<T> {
+public class DefaultSql<T extends AbstractEntity> implements ISql<T> {
 
 	public final String TABLE_NAME;
 	public final String SELECT;

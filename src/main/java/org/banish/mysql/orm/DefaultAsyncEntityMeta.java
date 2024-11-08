@@ -3,6 +3,7 @@
  */
 package org.banish.mysql.orm;
 
+import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.Table;
 import org.banish.mysql.annotation.enuma.AsyncType;
 import org.banish.mysql.orm.table.DefaultTableInfo;
@@ -11,7 +12,7 @@ import org.banish.mysql.orm.table.DefaultTableInfo;
  * @author YY
  * 具有异步特性的元数据信息
  */
-public class DefaultAsyncEntityMeta<T> extends DefaultEntityMeta<T> implements IAsyncEntityMeta {
+public class DefaultAsyncEntityMeta<T extends AbstractEntity> extends DefaultEntityMeta<T> implements IAsyncEntityMeta {
 	
 	private final AsyncType asyncType;
 	private final int asyncSize;

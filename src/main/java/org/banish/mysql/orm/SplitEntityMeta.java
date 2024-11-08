@@ -10,6 +10,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
+import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.SplitTable;
 import org.banish.mysql.annotation.enuma.SplitWay;
 import org.banish.mysql.orm.column.ByteColumnMeta;
@@ -27,7 +28,7 @@ import org.banish.mysql.orm.table.SplitTableInfo;
  * @author YY
  *
  */
-public class SplitEntityMeta<T> extends EntityMeta<T> {
+public class SplitEntityMeta<T extends AbstractEntity> extends EntityMeta<T> {
 	
 	private static ThreadLocal<DateFormat> yyyy = new ThreadLocal<>();
 	private static ThreadLocal<DateFormat> yyyyMM = new ThreadLocal<>();

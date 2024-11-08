@@ -3,6 +3,7 @@
  */
 package org.banish.mysql.orm;
 
+import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.SplitTable;
 import org.banish.mysql.annotation.enuma.AsyncType;
 import org.banish.mysql.orm.table.SplitTableInfo;
@@ -11,7 +12,7 @@ import org.banish.mysql.orm.table.SplitTableInfo;
  * @author YY
  *
  */
-public class SplitAsyncEntityMeta<T> extends SplitEntityMeta<T> implements IAsyncEntityMeta {
+public class SplitAsyncEntityMeta<T extends AbstractEntity> extends SplitEntityMeta<T> implements IAsyncEntityMeta {
 
 	private final AsyncType asyncType;
 	private final int asyncSize;

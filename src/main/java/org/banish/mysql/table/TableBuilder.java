@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.Id.Strategy;
 import org.banish.mysql.annotation.enuma.IndexType;
 import org.banish.mysql.annotation.enuma.IndexWay;
@@ -298,26 +297,10 @@ public class TableBuilder {
 			return Collections.emptyList();
 		}
 		
-		Class<? extends AbstractEntity> clazz = baseDao.getEntityMeta().getClazz();
-		long customInitId = 0;
-		try {
-			AbstractEntity entity = clazz.getConstructor().newInstance();
-			customInitId = entity.idGenerator();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
 		boolean autoBuild = baseDao.getEntityMeta().isAutoBuild();
-		List<String> ddlSqls = new ArrayList<>();
-		
-		//查询出当前表中最大的自增主键
-		long currMaxId = DDL.getTableMaxId(baseDao.getDataSource(), tableName, keyMeta.getColumnName());
 		
 		String mysqlVersion = DDL.getMysqlVersion(baseDao.getDataSource());
-		
-		String ddlSql = DDL.SET_AUTO_INCREMENT.replaceAll("#tableName#", tableName);
-		
-		//自增主键的检查
+		//当前表中定义的自增主键
 		long currAutoId = 0;
 		if(mysqlVersion.startsWith("8")) {
 			String tableFullName = baseDao.getDataSource().getDbName() + "/" + tableName;
@@ -325,24 +308,31 @@ public class TableBuilder {
 		} else {
 			currAutoId = DDL.getTableAutoinc5(baseDao.getDataSource(), tableName);
 		}
-		if(currMaxId >= currAutoId) {
-			if(autoBuild) {
-				Dao.executeSql(baseDao.getDataSource(), ddlSql, currMaxId + 1);
-			}
-			logger.info("数据库DDL修改自增ID：{}，参数：{}", ddlSql, currMaxId + 1);
-			ddlSqls.add(ddlSql);
+		long finalMaxId = currAutoId;
+		//查询出当前表中最大的自增主键
+		long currMaxId = DDL.getTableMaxId(baseDao.getDataSource(), tableName, keyMeta.getColumnName());
+		if(currMaxId + 1 > finalMaxId) {
+			finalMaxId = currMaxId + 1;
 		}
-		long baseValue = 0;
+		//业务开发定义的自增主键
+		long customInitId = baseDao.getEntityMeta().getCustomInitId();
 		if(customInitId > 0) {
-			baseValue = customInitId + 1;
+			customInitId = customInitId + 1;
 		} else {
-			baseValue = keyMeta.getBase() * SERVER_IDENTITY + 1;
+			customInitId = keyMeta.getBase() * SERVER_IDENTITY + 1;
 		}
-		if(baseValue > currMaxId && baseValue > currAutoId) {
+		
+		if(customInitId > finalMaxId) {
+			finalMaxId = customInitId;
+		}
+		
+		List<String> ddlSqls = new ArrayList<>();
+		if(finalMaxId > currAutoId) {
+			String ddlSql = DDL.setAutoIncrement(tableName, finalMaxId);
 			if(autoBuild) {
-				Dao.executeSql(baseDao.getDataSource(), ddlSql, baseValue);
+				Dao.executeSql(baseDao.getDataSource(), ddlSql);
 			}
-			logger.info("数据库DDL修改自增ID：{}，参数：{}", ddlSql, baseValue);
+			logger.info("数据库DDL修改自增ID：{}", ddlSql);
 			ddlSqls.add(ddlSql);
 		}
 		return ddlSqls;

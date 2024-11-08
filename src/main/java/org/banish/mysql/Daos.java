@@ -132,7 +132,7 @@ public class Daos {
 	public static class DaosBuilder {
 		private final int tableBaseZone;
 		private List<IDataSource> dataSources = new ArrayList<>();
-		private List<Class<?>> entityClasses = new ArrayList<>();
+		private List<Class<? extends AbstractEntity>> entityClasses = new ArrayList<>();
 		private int asyncPoolSize = 4;
 		private List<ValueFormatter> valueFormaters = new ArrayList<>();
 		
@@ -143,10 +143,10 @@ public class Daos {
 		public void addDataSource(IDataSource dataSource) {
 			this.dataSources.add(dataSource);
 		}
-		public void addEntityClasses(Collection<Class<?>> entityClasses) {
+		public void addEntityClasses(Collection<Class<? extends AbstractEntity>> entityClasses) {
 			this.entityClasses.addAll(entityClasses);
 		}
-		public void addEntityClass(Class<?> entityClass) {
+		public void addEntityClass(Class<? extends AbstractEntity> entityClass) {
 			this.entityClasses.add(entityClass);
 		}
 		public void setAsyncPoolSize(int asyncPoolSize) {
@@ -219,9 +219,9 @@ public class Daos {
 			Daos.INSTANCE.setupRuntimeDaos(runtimeDaos, asyncPoolSize);
 		}
 		
-		private List<EntityMeta<?>> buildMetas() {
-			Map<Class<?>, EntityMeta<?>> metas = new HashMap<>();
-			for(Class<?> clazz : entityClasses) {
+		private List<EntityMeta<? extends AbstractEntity>> buildMetas() {
+			Map<Class<? extends AbstractEntity>, EntityMeta<?>> metas = new HashMap<>();
+			for(Class<? extends AbstractEntity> clazz : entityClasses) {
 				if(metas.containsKey(clazz)) {
 					panic("Duplicate entity class %s is added to the dao builder", clazz.getSimpleName());
 				}

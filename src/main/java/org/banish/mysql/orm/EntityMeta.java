@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.enuma.Charset;
 import org.banish.mysql.orm.column.ColumnMeta;
 import org.banish.mysql.orm.column.PrimaryKeyColumnMeta;
@@ -23,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * @author YY
  * 数据库字段与实体对象的映射信息
  */
-public abstract class EntityMeta<T> implements IEntityMeta<T> {
+public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMeta<T> {
 	
 	private static Logger logger = LoggerFactory.getLogger(EntityMeta.class);
 	
@@ -184,4 +185,18 @@ public abstract class EntityMeta<T> implements IEntityMeta<T> {
 	public boolean isAutoBuild() {
 		return autoBuild;
 	}
+	
+	public long getCustomInitId() {
+		Class<T> clazz = this.getClazz();
+		long customInitId = 0;
+		try {
+			T entity = clazz.getConstructor().newInstance();
+			customInitId = entity.idGenerator();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return customInitId;
+	}
+	
+	
 }

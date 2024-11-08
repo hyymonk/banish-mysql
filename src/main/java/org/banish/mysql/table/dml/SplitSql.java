@@ -3,13 +3,14 @@
  */
 package org.banish.mysql.table.dml;
 
+import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.orm.EntityMeta;
 
 /**
  * @author YY
  *
  */
-public class SplitSql<T> implements ISql<T> {
+public class SplitSql<T extends AbstractEntity> implements ISql<T> {
 
 	public final String TABLE_NAME;
 	public final String INSERT;
