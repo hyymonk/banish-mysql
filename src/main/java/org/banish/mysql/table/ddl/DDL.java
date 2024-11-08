@@ -152,24 +152,25 @@ public class DDL {
 	/**
 	 * mysql5.x用这种方式来查自增主键
 	 */
-	private final static String TABLE_AUTOINC_5 = "SHOW TABLE STATUS WHERE NAME=?;";
+	private final static String TABLE_AUTOINC_5 = "SELECT `AUTO_INCREMENT` AS auto_increment FROM `INFORMATION_SCHEMA`.`TABLES` WHERE TABLE_SCHEMA=? AND TABLE_NAME=?;";
 	
-	public static long getTableAutoinc5(IDataSource dataSource, String tableName) {
-		TableStatus tableStatus = Dao.queryAliasObject(dataSource, TableStatus.class, TABLE_AUTOINC_5, tableName);
+	public static long getTableAutoinc5(IDataSource dataSource, String dbName, String tableName) {
+		TableStatus tableStatus = Dao.queryAliasObject(dataSource, TableStatus.class, TABLE_AUTOINC_5, dbName, tableName);
 		return tableStatus.autoIncrement;
 	}
 	
 	public static class TableStatus {
-		@Column(name = "Auto_increment", comment = "自动增长ID")
+		@Column(comment = "自动增长ID")
 		private long autoIncrement;
 	}
 	/**
 	 * mysql8.x用这种方式来查自增主键
 	 */
-	private final static String TABLE_AUTOINC_8 = "SELECT `AUTOINC` AS Auto_increment FROM `INFORMATION_SCHEMA`.`INNODB_TABLESTATS` WHERE `NAME`=?;";
+	private final static String TABLE_AUTOINC_8 = "SELECT `AUTOINC` AS auto_increment FROM `INFORMATION_SCHEMA`.`INNODB_TABLESTATS` WHERE `NAME`=?;";
 	
-	public static long getTableAutoinc8(IDataSource dataSource, String tableName) {
-		TableStatus tableStatus = Dao.queryAliasObject(dataSource, TableStatus.class, TABLE_AUTOINC_8, tableName);
+	public static long getTableAutoinc8(IDataSource dataSource, String dbName, String tableName) {
+		String tableFullName = dbName + "/" + tableName;
+		TableStatus tableStatus = Dao.queryAliasObject(dataSource, TableStatus.class, TABLE_AUTOINC_8, tableFullName);
 		return tableStatus.autoIncrement;
 	}
 	

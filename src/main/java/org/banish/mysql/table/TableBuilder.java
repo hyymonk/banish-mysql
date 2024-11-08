@@ -303,10 +303,9 @@ public class TableBuilder {
 		//当前表中定义的自增主键
 		long currAutoId = 0;
 		if(mysqlVersion.startsWith("8")) {
-			String tableFullName = baseDao.getDataSource().getDbName() + "/" + tableName;
-			currAutoId = DDL.getTableAutoinc8(baseDao.getDataSource(), tableFullName);
+			currAutoId = DDL.getTableAutoinc8(baseDao.getDataSource(), baseDao.getDataSource().getDbName(), tableName);
 		} else {
-			currAutoId = DDL.getTableAutoinc5(baseDao.getDataSource(), tableName);
+			currAutoId = DDL.getTableAutoinc5(baseDao.getDataSource(), baseDao.getDataSource().getDbName(), tableName);
 		}
 		long finalMaxId = currAutoId;
 		//查询出当前表中最大的自增主键
