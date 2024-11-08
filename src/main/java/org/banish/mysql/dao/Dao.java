@@ -83,7 +83,7 @@ public class Dao {
 		} 
 	}
 	
-	public void executeSql(IDataSource dataSource, String sql, Object... params) {
+	public static void executeSql(IDataSource dataSource, String sql, Object... params) {
 		Connection connection = null;
 		PreparedStatement statement = null;
 		try {

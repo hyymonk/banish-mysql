@@ -35,8 +35,10 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 		this.logEntityMeta = entityMeta;
 		//创建Dao对象的时候检查当前时间对应的表
 		SplitWay splitWay = entityMeta.getSplitWay();
-		if(splitWay != SplitWay.VALUE) {
-			String tableName = entityMeta.getLogTableName(System.currentTimeMillis());
+		if(splitWay == SplitWay.NULL) {
+		} else if(splitWay == SplitWay.VALUE) {
+		} else {
+			String tableName = entityMeta.getSplitTableName(System.currentTimeMillis());
 			SplitSql<T> sql = createSql(tableName);
 			splitSqlMap.put(tableName, sql);
 		}
@@ -48,7 +50,7 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 	}
 	
 	private SplitSql<T> ensureSqlInit(T t) {
-		String tableName = logEntityMeta.getLogTableName(t);
+		String tableName = logEntityMeta.getSplitTableNameByEntity(t);
 		SplitSql<T> sql = splitSqlMap.get(tableName);
 		if(sql == null) {
 			synchronized (this) {

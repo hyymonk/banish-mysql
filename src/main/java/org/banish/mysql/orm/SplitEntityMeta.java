@@ -12,12 +12,15 @@ import java.util.Date;
 
 import org.banish.mysql.annotation.SplitTable;
 import org.banish.mysql.annotation.enuma.SplitWay;
+import org.banish.mysql.orm.column.ByteColumnMeta;
 import org.banish.mysql.orm.column.ColumnMeta;
 import org.banish.mysql.orm.column.DateColumnMeta;
 import org.banish.mysql.orm.column.IntegerColumnMeta;
 import org.banish.mysql.orm.column.LocalDateTimeColumnMeta;
 import org.banish.mysql.orm.column.LongColumnMeta;
 import org.banish.mysql.orm.column.LongTimeColumnMeta;
+import org.banish.mysql.orm.column.ShortColumnMeta;
+import org.banish.mysql.orm.column.StringColumnMeta;
 import org.banish.mysql.orm.table.SplitTableInfo;
 
 /**
@@ -53,18 +56,36 @@ public class SplitEntityMeta<T> extends EntityMeta<T> {
 				throw new RuntimeException(
 						clazz.getSimpleName() + " can not find @TimeTable column named " + splitTable.byColumn());
 			}
-			if(splitingMeta instanceof DateColumnMeta) {
-				this.splitMeta = splitingMeta;
-			} else if(splitingMeta instanceof LocalDateTimeColumnMeta) {
-				this.splitMeta = splitingMeta;
-			} else if(splitingMeta instanceof LongColumnMeta) {
-				this.splitMeta = splitingMeta;
-			} else if(splitingMeta instanceof LongTimeColumnMeta) {
-				this.splitMeta = splitingMeta;
-			} else if(splitingMeta instanceof IntegerColumnMeta) {
-				this.splitMeta = splitingMeta;
+			if(this.splitWay == SplitWay.VALUE) {
+				if(splitingMeta instanceof LongColumnMeta) {
+					this.splitMeta = splitingMeta;
+				} else if(splitingMeta instanceof IntegerColumnMeta) {
+					this.splitMeta = splitingMeta;
+				} else if(splitingMeta instanceof ShortColumnMeta) {
+					this.splitMeta = splitingMeta;
+				} else if(splitingMeta instanceof ByteColumnMeta) {
+					this.splitMeta = splitingMeta;
+				} else if(splitingMeta instanceof StringColumnMeta) {
+					this.splitMeta = splitingMeta;
+				} else {
+					throw new RuntimeException(String.format("实体类%s的字段%s无法作为分表的元数据", clazz.getSimpleName(), splitingMeta.getFieldName()));
+				}
+			} else if (this.splitWay == SplitWay.MINUTE || this.splitWay == SplitWay.HOUR
+					|| this.splitWay == SplitWay.DAY || this.splitWay == SplitWay.WEEK
+					|| this.splitWay == SplitWay.MONTH || this.splitWay == SplitWay.YEAR) {
+				if(splitingMeta instanceof DateColumnMeta) {
+					this.splitMeta = splitingMeta;
+				} else if(splitingMeta instanceof LocalDateTimeColumnMeta) {
+					this.splitMeta = splitingMeta;
+				} else if(splitingMeta instanceof LongTimeColumnMeta) {
+					this.splitMeta = splitingMeta;
+				} else if(splitingMeta instanceof LongColumnMeta) {
+					this.splitMeta = splitingMeta;
+				} else {
+					throw new RuntimeException(String.format("实体类%s的字段%s无法作为分表的元数据", clazz.getSimpleName(), splitingMeta.getFieldName()));
+				}
 			} else {
-				throw new RuntimeException(String.format("实体类%s的字段%s无法作为时间分表的元数据", clazz.getSimpleName(), splitingMeta.getFieldName()));
+				this.splitMeta = null;
 			}
 		} else {
 			this.splitWay = SplitWay.NULL;
@@ -72,54 +93,64 @@ public class SplitEntityMeta<T> extends EntityMeta<T> {
 		}
 	}
 	
-	public String getLogTableName(long splitValue) {
-		String formatName = getFormat(splitValue);
+	public String getSplitTableName(Object splitValue) {
+		String formatName = getSplitPartition(splitValue);
 		return this.getTableName() + "_" + formatName;
 	}
 	
-	public String getLogTableName(Object t) {
-		long splitValue = splitValue(t);
-		String formatName = getFormat(splitValue);
-		return this.getTableName() + "_" + formatName;
-	}
-	
-	private long splitValue(Object t) {
+	public String getSplitTableNameByEntity(T t) {
 		try {
-			Object timeObj = splitMeta.takeValue(t);
-			if(timeObj != null) {
-				if(this.splitWay == SplitWay.VALUE) {
-					if(timeObj instanceof Long) {
-						return ((Long) timeObj).longValue();
-					} else if(timeObj instanceof Integer) {
-						return ((Integer) timeObj).intValue() * 1000L;
-					}
-				} else {
-					if(timeObj instanceof Date) {
-						Date date = (Date)timeObj;
-						ZonedDateTime zonedDateTime = date.toInstant().atZone(ZoneOffset.systemDefault());
-						return zonedDateTime.toInstant().toEpochMilli();
-					} else if(timeObj instanceof LocalDateTime) {
-						LocalDateTime localDateTime = (LocalDateTime)timeObj;
-						ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneOffset.systemDefault());
-						return zonedDateTime.toInstant().toEpochMilli();
-					} else if(timeObj instanceof Long) {
-						return ((Long) timeObj).longValue();
-					} else if(timeObj instanceof Integer) {
-						return ((Integer) timeObj).intValue() * 1000L;
-					}
+			Object splitValue = splitMeta.takeValue(t);
+			String splitPartition = getSplitPartition(splitValue);
+			return this.getTableName() + "_" + splitPartition;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return this.getTableName();
+	}
+	
+	private String getSplitPartition(Object splitValue) {
+		try {
+			if(this.splitWay == SplitWay.NULL) {
+				return "";
+			} else if(this.splitWay == SplitWay.VALUE) {
+				if(splitValue instanceof Long) {
+					return splitValue.toString();
+				} else if(splitValue instanceof Integer) {
+					return splitValue.toString();
+				} else if(splitValue instanceof Short) {
+					return splitValue.toString();
+				} else if(splitValue instanceof Byte) {
+					return splitValue.toString();
+				} else if(splitValue instanceof String) {
+					return splitValue.toString();
 				}
+			} else {
+				long millisTime = 0;
+				if(splitValue instanceof Date) {
+					Date date = (Date)splitValue;
+					ZonedDateTime zonedDateTime = date.toInstant().atZone(ZoneOffset.systemDefault());
+					millisTime = zonedDateTime.toInstant().toEpochMilli();
+				} else if(splitValue instanceof LocalDateTime) {
+					LocalDateTime localDateTime = (LocalDateTime)splitValue;
+					ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneOffset.systemDefault());
+					millisTime = zonedDateTime.toInstant().toEpochMilli();
+				} else if(splitValue instanceof Long) {
+					millisTime = ((Long) splitValue).longValue();
+				}
+				return formatTime(millisTime);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return System.currentTimeMillis();
+		return "";
 	}
 
 	public SplitWay getSplitWay() {
 		return splitWay;
 	}
 	
-	private String getFormat(long splitValue) {
+	private String formatTime(long millisTime) {
 		DateFormat dateFormat  = null;
 		if(splitWay == SplitWay.YEAR) {
 			dateFormat = yyyy.get();
@@ -127,44 +158,42 @@ public class SplitEntityMeta<T> extends EntityMeta<T> {
 				dateFormat = new SimpleDateFormat("yyyy");
 				yyyy.set(dateFormat);
 			}
-			return dateFormat.format(new Date(splitValue));
+			return dateFormat.format(new Date(millisTime));
 		} else if(splitWay == SplitWay.MONTH) {
 			dateFormat = yyyyMM.get();
 			if(dateFormat == null) {
 				dateFormat = new SimpleDateFormat("yyyyMM");
 				yyyyMM.set(dateFormat);
 			}
-			return dateFormat.format(new Date(splitValue));
+			return dateFormat.format(new Date(millisTime));
 		} else if(splitWay == SplitWay.WEEK) {
 			dateFormat = yyyyww.get();
 			if(dateFormat == null) {
 				dateFormat = new SimpleDateFormat("yyyyww");
 				yyyyww.set(dateFormat);
 			}
-			return dateFormat.format(new Date(splitValue));
+			return dateFormat.format(new Date(millisTime));
 		} else if(splitWay == SplitWay.DAY) {
 			dateFormat = yyyyMMdd.get();
 			if(dateFormat == null) {
 				dateFormat = new SimpleDateFormat("yyyyMMdd");
 				yyyyMMdd.set(dateFormat);
 			}
-			return dateFormat.format(new Date(splitValue));
+			return dateFormat.format(new Date(millisTime));
 		} else if(splitWay == SplitWay.HOUR) {
 			dateFormat = yyyyMMddHH.get();
 			if(dateFormat == null) {
 				dateFormat = new SimpleDateFormat("yyyyMMddHH");
 				yyyyMMddHH.set(dateFormat);
 			}
-			return dateFormat.format(new Date(splitValue));
+			return dateFormat.format(new Date(millisTime));
 		} else if(splitWay == SplitWay.MINUTE) {
 			dateFormat = yyyyMMddHHmm.get();
 			if(dateFormat == null) {
 				dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 				yyyyMMddHHmm.set(dateFormat);
 			}
-			return dateFormat.format(new Date(splitValue));
-		} else if(splitWay == SplitWay.VALUE) {
-			return splitValue + "";
+			return dateFormat.format(new Date(millisTime));
 		} else {
 			throw new RuntimeException("no supporting split way " + splitWay);
 		}

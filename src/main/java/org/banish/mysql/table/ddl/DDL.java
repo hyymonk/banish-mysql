@@ -3,6 +3,8 @@
  */
 package org.banish.mysql.table.ddl;
 
+import java.util.List;
+
 import org.banish.mysql.annotation.Column;
 import org.banish.mysql.dao.Dao;
 import org.banish.mysql.database.IDataSource;
@@ -24,7 +26,7 @@ public class DDL {
 		return tableExist != null;
 	} 
 	
-	public static class TableExist {
+	private static class TableExist {
 		@Column(name = "TABLE_NAME", comment = "表名")
 		private String tableName;
 	}
@@ -37,7 +39,12 @@ public class DDL {
 	/**
 	 * 查看表索引
 	 */
-	public final static String SHOW_KEYS = "SHOW KEYS FROM `#tableName#`";
+	private final static String SHOW_KEYS = "SHOW KEYS FROM `%s`";
+	
+	public static List<IndexStruct> getKeys(IDataSource dataSource, String tableName) {
+		String sql = String.format(SHOW_KEYS, tableName);
+		return Dao.queryAliasObjects(dataSource, IndexStruct.class, sql);
+	}
 	
 	public static class IndexStruct {
 		@Column(name = "Key_name", comment = "索引名")
@@ -65,7 +72,13 @@ public class DDL {
 	/**
 	 * 查看表结构
 	 */
-	public final static String TABLE_DES = "DESCRIBE `#tableName#`";
+	private final static String TABLE_DES = "DESCRIBE `%s`";
+	
+	public static List<TableDes> getTableColumns(IDataSource dataSource, String tableName) {
+		String sql = String.format(TABLE_DES, tableName);
+		return Dao.queryAliasObjects(dataSource, TableDes.class, sql);
+	}
+	
 	public static class TableDes {
 		@Column(name = "Field", comment = "字段名")
 		private String field;
@@ -112,15 +125,17 @@ public class DDL {
 	/**
 	 * 查询最大ID
 	 */
-	public final static String SELECT_MAX_ID = "SELECT max(`#id#`) as maxid FROM `#tableName#` LIMIT 1;";
+	private final static String SELECT_MAX_ID = "SELECT max(`%s`) as maxid FROM `%s` LIMIT 1;";
 	
-	public static class TableMaxId {
+	public static long getTableMaxId(IDataSource dataSource, String tableName, String primaryKeyName) {
+		String sql = String.format(SELECT_MAX_ID, primaryKeyName, tableName);
+		TableMaxId tableMaxId = Dao.queryAliasObject(dataSource, TableMaxId.class, sql);
+		return tableMaxId.maxId;
+	} 
+	
+	private static class TableMaxId {
 		@Column(name = "maxid", comment = "表的最大ID")
 		private long maxId;
-
-		public long getMaxId() {
-			return maxId;
-		}
 	}
 	
 	
@@ -132,30 +147,40 @@ public class DDL {
 	/**
 	 * mysql5.x用这种方式来查自增主键
 	 */
-	public final static String TABLE_AUTOINC_5 = "SHOW TABLE STATUS WHERE NAME=?;";
-	public static class TableStatus {
+	private final static String TABLE_AUTOINC_5 = "SHOW TABLE STATUS WHERE NAME=?;";
+	
+	public static long getTableAutoinc5(IDataSource dataSource, String tableName) {
+		TableStatus tableStatus = Dao.queryAliasObject(dataSource, TableStatus.class, TABLE_AUTOINC_5, tableName);
+		return tableStatus.autoIncrement;
+	}
+	
+	private static class TableStatus {
 		@Column(name = "Auto_increment", comment = "自动增长ID")
 		private long autoIncrement;
-
-		public long getAutoIncrement() {
-			return autoIncrement;
-		}
 	}
 	/**
 	 * mysql8.x用这种方式来查自增主键
 	 */
-	public final static String TABLE_AUTOINC_8 = "SELECT `AUTOINC` AS Auto_increment FROM `INFORMATION_SCHEMA`.`INNODB_TABLESTATS` WHERE `NAME`=?;";
+	private final static String TABLE_AUTOINC_8 = "SELECT `AUTOINC` AS Auto_increment FROM `INFORMATION_SCHEMA`.`INNODB_TABLESTATS` WHERE `NAME`=?;";
+	
+	public static long getTableAutoinc8(IDataSource dataSource, String tableName) {
+		TableStatus tableStatus = Dao.queryAliasObject(dataSource, TableStatus.class, TABLE_AUTOINC_8, tableName);
+		return tableStatus.autoIncrement;
+	}
+	
 	
 	/**
 	 * 查mysql版本号
 	 */
-	public final static String MYSQL_VERSION = "SELECT VERSION() AS version;";
-	public static class MysqlVersion {
+	private final static String MYSQL_VERSION = "SELECT VERSION() AS version;";
+	
+	public static String getMysqlVersion(IDataSource dataSource) {
+		MysqlVersion mysqlVersion = Dao.queryAliasObject(dataSource, MysqlVersion.class, MYSQL_VERSION);
+		return mysqlVersion.version;
+	}
+	
+	private static class MysqlVersion {
 		@Column(comment = "版本号")
 		private String version;
-
-		public String getVersion() {
-			return version;
-		}
 	}
 }

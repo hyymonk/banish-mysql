@@ -17,6 +17,7 @@ import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.Id.Strategy;
 import org.banish.mysql.annotation.enuma.IndexType;
 import org.banish.mysql.annotation.enuma.IndexWay;
+import org.banish.mysql.dao.Dao;
 import org.banish.mysql.dao.OriginDao;
 import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.IndexMeta;
@@ -24,11 +25,7 @@ import org.banish.mysql.orm.column.ColumnMeta;
 import org.banish.mysql.orm.column.PrimaryKeyColumnMeta;
 import org.banish.mysql.table.ddl.DDL;
 import org.banish.mysql.table.ddl.DDL.IndexStruct;
-import org.banish.mysql.table.ddl.DDL.MysqlVersion;
 import org.banish.mysql.table.ddl.DDL.TableDes;
-import org.banish.mysql.table.ddl.DDL.TableExist;
-import org.banish.mysql.table.ddl.DDL.TableMaxId;
-import org.banish.mysql.table.ddl.DDL.TableStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
@@ -93,7 +90,7 @@ public class TableBuilder {
 		EntityMeta<?> entityMeta = baseDao.getEntityMeta();
 		String ddlSql = createTableSql(baseDao, tableName);
 		if(entityMeta.isAutoBuild()) {
-			baseDao.executeSql(ddlSql);
+			Dao.executeSql(baseDao.getDataSource(), ddlSql);
 		}
 		logger.info("数据库DDL新建表：{}", ddlSql);
 		return ddlSql;
@@ -127,11 +124,8 @@ public class TableBuilder {
 	 * @param baseDao
 	 */
 	private static List<String> updateTable(OriginDao<?> baseDao, String tableName) {
-		List<String> updateDdlSqls = new ArrayList<>();
-		
 		//查询数据库中的字段定义
-		String sql = DDL.TABLE_DES.replaceAll("#tableName#", tableName);
-		List<TableDes> tableDesList = baseDao.queryAliasObjects(TableDes.class, sql);
+		List<TableDes> tableDesList = DDL.getTableColumns(baseDao.getDataSource(), tableName);
 		
 		// 数据表列的名字与数据类型集合
 		Map<String, TableDes> dbColumns = new HashMap<>();
@@ -140,13 +134,15 @@ public class TableBuilder {
 		
 		Map<String, ColumnMeta> columnMetas = baseDao.getEntityMeta().getColumnMap();
 		//先以查询结果来检测数据表中是否存在实体类中没有定义的列，有则删除
+		
+		List<String> updateDdlSqls = new ArrayList<>();
 		for (TableDes tableDes : tableDesList) {
 			String columnName = tableDes.getField();
 			if (!columnMetas.containsKey(columnName)) {
 				// 删除列
 				String ddlSql = DDL.TABLE_DROP_COLUMN.replaceAll("#tableName#", tableName).replaceAll("#columnName#", columnName);
 				if(autoBuild) {
-					baseDao.executeSql(ddlSql);
+					Dao.executeSql(baseDao.getDataSource(), ddlSql);
 				}
 				logger.info("数据库DDL删除列：{}", ddlSql);
 				updateDdlSqls.add(ddlSql);
@@ -164,7 +160,7 @@ public class TableBuilder {
 				String ddlSql = DDL.TABLE_ADD_COLUMN.replaceAll("#tableName#", tableName).replaceAll(
 						"#columnDefine#", getColumnDefine(columnMeta));
 				if(autoBuild) {
-					baseDao.executeSql(ddlSql);
+					Dao.executeSql(baseDao.getDataSource(), ddlSql);
 				}
 				logger.info("数据库DDL新增列：{}", ddlSql);
 				updateDdlSqls.add(ddlSql);
@@ -180,7 +176,7 @@ public class TableBuilder {
 				String ddlSql = DDL.TABLE_CHANGE_COLUMN.replaceAll("#tableName#", tableName).replaceAll("#columnName#", entry.getKey())
 						.replaceAll("#columnDefine#", getColumnDefine(columnMeta));
 				if(autoBuild) {
-					baseDao.executeSql(ddlSql);
+					Dao.executeSql(baseDao.getDataSource(), ddlSql);
 				}
 				logger.info("数据库DDL修改列：{}", ddlSql);
 				updateDdlSqls.add(ddlSql);
@@ -241,7 +237,7 @@ public class TableBuilder {
 						.replaceAll("#columnName#", entityIndex.getColumnsString())
 						.replaceAll("#indexWay#", entityIndex.getWay().value());
 				if(autoBuild) {
-					baseDao.executeSql(ddlSql);
+					Dao.executeSql(baseDao.getDataSource(), ddlSql);
 				}
 				logger.info("数据库DDL添加索引：{}", ddlSql);
 				updateDdlSqls.add(ddlSql);
@@ -256,7 +252,7 @@ public class TableBuilder {
 							.replaceAll("#columnName#", entityIndex.getColumnsString())
 							.replaceAll("#indexWay#", entityIndex.getWay().value());
 					if(autoBuild) {
-						baseDao.executeSql(ddlSql);
+						Dao.executeSql(baseDao.getDataSource(), ddlSql);
 					}
 					logger.info("数据库DDL修改索引：{}", ddlSql);
 					updateDdlSqls.add(ddlSql);
@@ -273,12 +269,12 @@ public class TableBuilder {
 	 */
 	private static Map<String, IndexMeta> getDbIndex(OriginDao<?> dao, String tableName) {
 		// 查询当前表格索引
-		String sql = DDL.SHOW_KEYS.replaceAll("#tableName#", tableName);
-		List<IndexStruct> result = dao.queryAliasObjects(DDL.IndexStruct.class, sql);
+		List<IndexStruct> keys = DDL.getKeys(dao.getDataSource(), tableName);
+		
 		
 		// 表中已有的索引<索引名字，索引对象>
 		Map<String, IndexMeta> indexMap = new HashMap<>();
-		for (IndexStruct indexStruct : result) {
+		for (IndexStruct indexStruct : keys) {
 			String indexName = indexStruct.getName().toUpperCase();
 			IndexMeta index = indexMap.get(indexName);
 			if(index == null) {
@@ -321,29 +317,23 @@ public class TableBuilder {
 		List<String> ddlSqls = new ArrayList<>();
 		
 		//查询出当前表中最大的自增主键
-		String selectMaxId = DDL.SELECT_MAX_ID.replaceAll("#id#", keyMeta.getColumnName())
-				.replaceAll("#tableName#", tableName);
+		long currMaxId = DDL.getTableMaxId(baseDao.getDataSource(), tableName, keyMeta.getColumnName());
 		
-		TableMaxId tableMaxId = baseDao.queryAliasObject(TableMaxId.class, selectMaxId);
-		long currMaxId = tableMaxId.getMaxId();
+		String mysqlVersion = DDL.getMysqlVersion(baseDao.getDataSource());
 		
 		String ddlSql = DDL.SET_AUTO_INCREMENT.replaceAll("#tableName#", tableName);
 		
-		
-		MysqlVersion mysqlVersion = baseDao.queryAliasObject(MysqlVersion.class, DDL.MYSQL_VERSION);
 		//自增主键的检查
 		long currAutoId = 0;
-		if(mysqlVersion.getVersion().startsWith("8")) {
+		if(mysqlVersion.startsWith("8")) {
 			String tableFullName = baseDao.getDataSource().getDbName() + "/" + tableName;
-			TableStatus tableStatus = baseDao.queryAliasObject(TableStatus.class, DDL.TABLE_AUTOINC_8, tableFullName);
-			currAutoId = tableStatus.getAutoIncrement();
+			currAutoId = DDL.getTableAutoinc8(baseDao.getDataSource(), tableFullName);
 		} else {
-			TableStatus tableStatus = baseDao.queryAliasObject(TableStatus.class, DDL.TABLE_AUTOINC_5, tableName);
-			currAutoId = tableStatus.getAutoIncrement();
+			currAutoId = DDL.getTableAutoinc5(baseDao.getDataSource(), tableName);
 		}
 		if(currMaxId >= currAutoId) {
 			if(autoBuild) {
-				baseDao.executeSql(ddlSql, currMaxId + 1);
+				Dao.executeSql(baseDao.getDataSource(), ddlSql, currMaxId + 1);
 			}
 			logger.info("数据库DDL修改自增ID：{}，参数：{}", ddlSql, currMaxId + 1);
 			ddlSqls.add(ddlSql);
@@ -356,7 +346,7 @@ public class TableBuilder {
 		}
 		if(baseValue > currMaxId && baseValue > currAutoId) {
 			if(autoBuild) {
-				baseDao.executeSql(ddlSql, baseValue);
+				Dao.executeSql(baseDao.getDataSource(), ddlSql, baseValue);
 			}
 			logger.info("数据库DDL修改自增ID：{}，参数：{}", ddlSql, baseValue);
 			ddlSqls.add(ddlSql);
