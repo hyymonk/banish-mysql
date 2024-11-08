@@ -27,9 +27,9 @@ public class DefaultSql<T> implements ISql<T> {
 		
 		SELECT = select(entityMeta);
 		SELECT_ALL = selectAll(entityMeta);
-		INSERT = insert(entityMeta);
-		UPDATE = update(entityMeta);
-		DELETE = delete(entityMeta);
+		INSERT = ISql.buildInsertSql(entityMeta, TABLE_NAME);
+		UPDATE = ISql.buildUpdateSql(entityMeta, TABLE_NAME);
+		DELETE = ISql.buildDeleteSql(entityMeta, TABLE_NAME);
 		DELETE_ALL = deleteAll(entityMeta);
 		COUNT_ALL = countAll(entityMeta);
 		
@@ -56,67 +56,6 @@ public class DefaultSql<T> implements ISql<T> {
 	 */
 	private String selectAll(EntityMeta<T> entityMeta) {
 		return String.format("SELECT * FROM `%s`", TABLE_NAME);
-	}
-	/**
-	 * 插入数据的SQL
-	 * @param entityMeta
-	 * @return
-	 */
-	private String insert(EntityMeta<T> entityMeta) {
-		StringBuilder sql = new StringBuilder();
-		sql.append(String.format("INSERT INTO `%s` (", TABLE_NAME));
-		boolean isFirst = true;
-		for(ColumnMeta column : entityMeta.getColumnList()) {
-			if(!isFirst) {
-				sql.append(",");
-			}
-			sql.append(String.format("`%s`", column.getColumnName()));
-			isFirst = false;
-		}
-		sql.append(") VALUES (");
-		isFirst = true;
-		for(int i = 0; i < entityMeta.getColumnList().size(); i++) {
-			if(!isFirst) {
-				sql.append(",");
-			}
-			sql.append("?");
-			isFirst = false;
-		}
-		sql.append(")");
-		return sql.toString();
-	}
-	/**
-	 * 根据ID更新数据的SQL
-	 * @param entityMeta
-	 * @return
-	 */
-	private String update(EntityMeta<T> entityMeta) {
-		StringBuilder sql = new StringBuilder();
-		sql.append(String.format("UPDATE `%s` SET ", TABLE_NAME));
-		boolean isFirst = true;
-		for(ColumnMeta column : entityMeta.getColumnList()) {
-			if(column.isReadonly()) {
-				continue;
-			}
-			if(column == entityMeta.getPrimaryKeyMeta()) {
-				continue;
-			}
-			if(!isFirst) {
-				sql.append(",");
-			}
-			sql.append(String.format("`%s`=?", column.getColumnName()));
-			isFirst = false;
-		}
-		sql.append(String.format(" WHERE `%s`=?", entityMeta.getPrimaryKeyMeta().getColumnName()));
-		return sql.toString();
-	}
-	/**
-	 * 根据ID删除数据的SQL
-	 * @param entityMeta
-	 * @return
-	 */
-	private String delete(EntityMeta<T> entityMeta) {
-		return String.format("DELETE FROM `%s` WHERE `%s`=?", TABLE_NAME, entityMeta.getPrimaryKeyMeta().getColumnName());
 	}
 	/**
 	 * 删除某个表所有数据的SQL

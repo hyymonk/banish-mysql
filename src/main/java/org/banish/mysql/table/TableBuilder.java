@@ -4,8 +4,6 @@
 package org.banish.mysql.table;
 
 
-import static org.banish.mysql.table.Symbol.DOT;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -104,7 +102,7 @@ public class TableBuilder {
 	private static String createTableSql(OriginDao<?> baseDao, String tableName) {
 		EntityMeta<?> entityMeta = baseDao.getEntityMeta();
 		StringBuilder result = new StringBuilder();
-		result.append("CREATE TABLE ").append(DOT).append(tableName).append(DOT).append(" (");
+		result.append(String.format("CREATE TABLE `%s` (", tableName));
 		
 		for(ColumnMeta columnMeta : entityMeta.getColumnList()) {
 			result.append(getColumnDefine(columnMeta)).append(",");
@@ -112,7 +110,7 @@ public class TableBuilder {
 		
 		ColumnMeta primaryKeyMeta = entityMeta.getPrimaryKeyMeta();
 		//创建表的时候只进行了主键的定义，索引的设置会在表构建好之后进行处理
-		result.append("PRIMARY KEY (").append(DOT).append(primaryKeyMeta.getColumnName()).append(DOT).append(")").append("\n");
+		result.append(String.format("PRIMARY KEY (`%s`)\n", primaryKeyMeta.getColumnName()));
 		//这里并没有对自增ID进行初始处理，自增ID的设置会在表构建好之后进行处理
 		result.append(") ENGINE=InnoDB DEFAULT CHARSET=").append(entityMeta.getTableCharset().value());
 		result.append(" COMMENT='").append(entityMeta.getTableComment()).append("';");
@@ -192,11 +190,7 @@ public class TableBuilder {
 	 */
 	private static String getColumnDefine(ColumnMeta columnMeta) {
 		StringBuilder result = new StringBuilder();
-		
-		result.append(DOT).append(columnMeta.getColumnName()).append(DOT).append(" ");
-		
-		result.append(columnMeta.dbColumnType());
-		String defaultValue = columnMeta.defaultValue();
+		result.append(String.format("`%s` %s", columnMeta.getColumnName(), columnMeta.dbColumnType()));
 		
 		String autoIncrement = "";
 		if(columnMeta instanceof PrimaryKeyColumnMeta) {
@@ -206,7 +200,7 @@ public class TableBuilder {
 			}
 		}
 		
-		result.append(" ").append(defaultValue).append(" ").append(autoIncrement);
+		result.append(" ").append(columnMeta.defaultValue()).append(" ").append(autoIncrement);
 		// 字段备注
 		result.append(" COMMENT '").append(columnMeta.getComment()).append("'");
 		return result.toString();

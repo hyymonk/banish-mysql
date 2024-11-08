@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.enuma.SplitWay;
@@ -26,7 +27,7 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 	/**
 	 * <表名，Sql组合>
 	 */
-	private Map<String, SplitSql<T>> splitSqlMap = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, SplitSql<T>> splitSqlMap = new ConcurrentHashMap<>();
 	
 	private SplitEntityMeta<T> logEntityMeta;
 	
@@ -64,7 +65,7 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 		return sql;
 	}
 	
-	private synchronized SplitSql<T> createSql(String tableName) {
+	private SplitSql<T> createSql(String tableName) {
 		//自动建表
 		TableBuilder.build(this, tableName);
 		//构建Sql对象

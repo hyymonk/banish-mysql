@@ -3,8 +3,6 @@
  */
 package org.banish.mysql.orm;
 
-import static org.banish.mysql.table.Symbol.DOT;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +54,7 @@ public class IndexMeta {
 			if(!isFirst) {
 				columnBuff.append(",");
 			}
-			columnBuff.append(DOT).append(column).append(DOT);
+			columnBuff.append(String.format("`%s`", column));
 			isFirst = false;
 		}
 		return columnBuff.toString();

@@ -3,15 +3,85 @@
  */
 package org.banish.mysql.table.dml;
 
+import org.banish.mysql.orm.EntityMeta;
+import org.banish.mysql.orm.column.ColumnMeta;
+
 /**
  * @author YY
  *
  */
 public interface ISql<T> {
 	
-	public String insert();
+	String insert();
 	
-	public String update();
+	String update();
 	
-	public String delete();
+	String delete();
+	
+	/**
+	 * 构建插入语句
+	 * @param entityMeta
+	 * @param tableName
+	 * @return
+	 */
+	static String buildInsertSql(EntityMeta<?> entityMeta, String tableName) {
+		StringBuilder sql = new StringBuilder();
+		sql.append(String.format("INSERT INTO `%s` (", tableName));
+		boolean isFirst = true;
+		for(ColumnMeta column : entityMeta.getColumnList()) {
+			if(!isFirst) {
+				sql.append(",");
+			}
+			sql.append(String.format("`%s`", column.getColumnName()));
+			isFirst = false;
+		}
+		sql.append(") VALUES (");
+		isFirst = true;
+		for(int i = 0; i < entityMeta.getColumnList().size(); i++) {
+			if(!isFirst) {
+				sql.append(",");
+			}
+			sql.append("?");
+			isFirst = false;
+		}
+		sql.append(")");
+		return sql.toString();
+	}
+	
+	/**
+	 * 构建更新语句
+	 * @param entityMeta
+	 * @param tableName
+	 * @return
+	 */
+	static String buildUpdateSql(EntityMeta<?> entityMeta, String tableName) {
+		StringBuilder sql = new StringBuilder();
+		sql.append(String.format("UPDATE `%s` SET ", tableName));
+		boolean isFirst = true;
+		for(ColumnMeta column : entityMeta.getColumnList()) {
+			if(column.isReadonly()) {
+				continue;
+			}
+			if(column == entityMeta.getPrimaryKeyMeta()) {
+				continue;
+			}
+			if(!isFirst) {
+				sql.append(",");
+			}
+			sql.append(String.format("`%s`=?", column.getColumnName()));
+			isFirst = false;
+		}
+		sql.append(String.format(" WHERE `%s`=?", entityMeta.getPrimaryKeyMeta().getColumnName()));
+		return sql.toString();
+	}
+	
+	/**
+	 * 构建删除语句
+	 * @param entityMeta
+	 * @param tableName
+	 * @return
+	 */
+	static String buildDeleteSql(EntityMeta<?> entityMeta, String tableName) {
+		return String.format("DELETE FROM `%s` WHERE `%s`=?", tableName, entityMeta.getPrimaryKeyMeta().getColumnName());
+	}
 }
