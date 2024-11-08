@@ -27,6 +27,7 @@ import org.banish.mysql.orm.DefaultEntityMeta;
 import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.SplitAsyncEntityMeta;
 import org.banish.mysql.orm.SplitEntityMeta;
+import org.banish.mysql.table.TableBuilder;
 import org.banish.mysql.valueformat.ValueFormatters;
 import org.banish.mysql.valueformat.ValueFormatters.ValueFormatter;
 import org.slf4j.Logger;
@@ -129,10 +130,15 @@ public class Daos {
     }
 	
 	public static class DaosBuilder {
+		private final int tableBaseZone;
 		private List<IDataSource> dataSources = new ArrayList<>();
 		private List<Class<?>> entityClasses = new ArrayList<>();
 		private int asyncPoolSize = 4;
 		private List<ValueFormatter> valueFormaters = new ArrayList<>();
+		
+		public DaosBuilder(int tableBaseZone) {
+			this.tableBaseZone = tableBaseZone;
+		}
 		
 		public void addDataSource(IDataSource dataSource) {
 			this.dataSources.add(dataSource);
@@ -152,6 +158,8 @@ public class Daos {
 		
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public void setup() {
+			TableBuilder.SERVER_IDENTITY = tableBaseZone;
+			
 			//构建所有实体类的运行期元数据信息
 			List<EntityMeta<?>> metas = buildMetas();
 			
@@ -202,7 +210,7 @@ public class Daos {
 							runtimeDaos.put(zoneId, zoneDaos);
 						}
 						zoneDaos.put(entityMeta.getClazz(), runtimeDao);
-						logger.info("Table %s's dao is initialized, with type {}, at zone {} using alias named {}",
+						logger.info("Table {}'s dao is initialized, with type {}, at zone {} using alias named {}",
 								runtimeDao.getEntityMeta().getTableName(), runtimeDao.getClass().getSimpleName(),
 								zoneId, dataSource.getAlias());
 					}

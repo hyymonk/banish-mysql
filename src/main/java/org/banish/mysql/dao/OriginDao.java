@@ -322,7 +322,7 @@ public abstract class OriginDao<T extends AbstractEntity> {
 	 * @param id
 	 * @return
 	 */
-	public abstract T query(Object primaryKey);
+	public abstract T queryByPrimaryKey(Object primaryKey);
 	/**
 	 * 查询整个表的数据
 	 * @return

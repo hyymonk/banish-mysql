@@ -144,7 +144,7 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 	}
 
 	@Override
-	public T query(Object id) {
+	public T queryByPrimaryKey(Object primaryKey) {
 		throw new UnsupportedOperationException("不该被调用的函数");
 	}
 

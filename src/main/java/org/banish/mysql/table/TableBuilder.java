@@ -110,7 +110,7 @@ public class TableBuilder {
 		
 		ColumnMeta primaryKeyMeta = entityMeta.getPrimaryKeyMeta();
 		//创建表的时候只进行了主键的定义，索引的设置会在表构建好之后进行处理
-		result.append(String.format("PRIMARY KEY (`%s`)\n", primaryKeyMeta.getColumnName()));
+		result.append(String.format("PRIMARY KEY (`%s`)", primaryKeyMeta.getColumnName()));
 		//这里并没有对自增ID进行初始处理，自增ID的设置会在表构建好之后进行处理
 		result.append(") ENGINE=InnoDB DEFAULT CHARSET=").append(entityMeta.getTableCharset().value());
 		result.append(" COMMENT='").append(entityMeta.getTableComment()).append("';");

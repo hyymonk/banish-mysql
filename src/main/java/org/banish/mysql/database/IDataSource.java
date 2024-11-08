@@ -4,6 +4,7 @@
 package org.banish.mysql.database;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * 
@@ -18,7 +19,7 @@ public interface IDataSource {
 	 * 通过数据源获取连接
 	 * @return
 	 */
-	Connection getConnection();
+	Connection getConnection() throws SQLException;
 	/**
 	 * 数据库的名字
 	 * @return

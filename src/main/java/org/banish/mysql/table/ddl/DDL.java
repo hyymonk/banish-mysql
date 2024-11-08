@@ -26,7 +26,7 @@ public class DDL {
 		return tableExist != null;
 	} 
 	
-	private static class TableExist {
+	public static class TableExist {
 		@Column(name = "TABLE_NAME", comment = "表名")
 		private String tableName;
 	}
@@ -133,7 +133,7 @@ public class DDL {
 		return tableMaxId.maxId;
 	} 
 	
-	private static class TableMaxId {
+	public static class TableMaxId {
 		@Column(name = "maxid", comment = "表的最大ID")
 		private long maxId;
 	}
@@ -154,7 +154,7 @@ public class DDL {
 		return tableStatus.autoIncrement;
 	}
 	
-	private static class TableStatus {
+	public static class TableStatus {
 		@Column(name = "Auto_increment", comment = "自动增长ID")
 		private long autoIncrement;
 	}
@@ -179,7 +179,7 @@ public class DDL {
 		return mysqlVersion.version;
 	}
 	
-	private static class MysqlVersion {
+	public static class MysqlVersion {
 		@Column(comment = "版本号")
 		private String version;
 	}

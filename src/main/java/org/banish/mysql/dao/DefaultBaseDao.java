@@ -130,11 +130,11 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 	}
 	
 	/**
-	 * 根据ID查询数据
+	 * 根据主键查询数据
 	 * @param id
 	 * @return
 	 */
-	public T query(Object id) {
+	public T queryByPrimaryKey(Object primaryKey) {
 		Connection connection = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
@@ -142,7 +142,7 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 		try {
 			connection = this.getDataSource().getConnection();
 			statement = connection.prepareStatement(sql);
-			statement.setObject(1, id);
+			statement.setObject(1, primaryKey);
 			rs = statement.executeQuery();
 			if(rs.next()) {
 				return Dao.formObject(getEntityMeta(), rs, false);
