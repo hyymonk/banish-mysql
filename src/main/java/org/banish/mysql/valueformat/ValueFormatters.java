@@ -5,6 +5,7 @@ package org.banish.mysql.valueformat;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,8 +16,8 @@ public class ValueFormatters {
 
 	private static final Map<String, ValueFormatter> VALUE_FORMATERS = new HashMap<>();
 	
-	public static void addFormater(ValueFormatter... valueFormater) {
-		for(ValueFormatter formater : valueFormater) {
+	public static void addFormater(List<ValueFormatter> valueFormaters) {
+		for(ValueFormatter formater : valueFormaters) {
 			VALUE_FORMATERS.put(formater.formatter(), formater);
 		}
 	}

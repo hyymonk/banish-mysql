@@ -43,10 +43,9 @@ public abstract class ColumnMeta {
 	 * 备注
 	 */
 	protected final String comment;
-	/**
-	 * 列的默认值
-	 */
-	protected final String defaultValue;
+	//取消了默认值的设定，
+	//	第一程序字段在创建实体时对于原生类型有默认值，如boolean类型，程序的默认值是false，但声明默认值为true就显得矛盾
+	//	第二像结构体、容器类、时间类字段也应该在创建实体时设置对应的值
 	
 	protected ColumnMeta(Field field) {
 		this.field = field;
@@ -61,7 +60,6 @@ public abstract class ColumnMeta {
 			this.columnName = this.field.getName();
 			this.readonly = false;
 			this.comment = "";
-			this.defaultValue = "";
 		} else {
 			this.fieldName = this.field.getName();
 			if("".equals(column.name())) {
@@ -71,7 +69,6 @@ public abstract class ColumnMeta {
 			}
 			this.readonly = column.readonly();
 			this.comment = column.comment();
-			this.defaultValue = column.defaultValue();
 		}
 	}
 	

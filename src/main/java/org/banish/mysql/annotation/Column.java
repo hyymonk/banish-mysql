@@ -24,8 +24,6 @@ public @interface Column {
 	String name() default "";
 	/**
 	 * 字段长度，仅对String生效
-	 * length=-1时将使用text类型
-	 * 可拓展-3是longtext之类的
 	 * @return
 	 */
 	int length() default 255;
@@ -41,17 +39,17 @@ public @interface Column {
 	String formatter() default "";
 	/**
 	 * 扩展数据
+	 * long类型可扩展extra="time"
+	 * float类型可扩展extra={"20","2"}
+	 * double类型可扩展extra={"20","2"}
+	 * BigDecimal类型可扩展extra={"20","2"}
+	 * String类型可扩展extra="text"、extra="mediumtext"
 	 * @return
 	 */
 	String[] extra() default {};
 	/**
-	 * 是否只读，在插入数据后将不再能修改
+	 * 是否只读，在插入数据后将不再通过update语句修改该字段
 	 * @return
 	 */
 	boolean readonly() default false;
-	/**
-	 * 默认值
-	 * @return
-	 */
-	String defaultValue() default "";
 }

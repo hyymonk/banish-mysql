@@ -37,11 +37,7 @@ public class LocalDateTimeColumnMeta extends ColumnMeta {
 	
 	@Override
 	public String defaultValue() {
-		if(defaultValue != null && !"".equals(defaultValue)) {
-			return "DEFAULT '" + defaultValue + "'";
-		} else {
-			return "DEFAULT NULL";
-		}
+		return "DEFAULT NULL";
 	}
 	
 	@Override

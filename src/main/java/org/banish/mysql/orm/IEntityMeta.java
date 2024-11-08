@@ -13,9 +13,9 @@ import org.banish.mysql.orm.column.ColumnMeta;
  */
 public interface IEntityMeta<T> {
 
-	T newInstance() throws Exception ;
-	
+	T newInstance() throws Exception;
+
 	ColumnMeta getColumnMeta(String columnName);
-	
+
 	List<ColumnMeta> getColumnList();
 }

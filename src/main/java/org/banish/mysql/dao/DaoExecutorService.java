@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author YY
- * 异步数据入库
+ * 数据异步入库
  */
 public class DaoExecutorService {
 	
