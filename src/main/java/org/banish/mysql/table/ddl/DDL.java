@@ -8,6 +8,7 @@ import java.util.List;
 import org.banish.mysql.annotation.Column;
 import org.banish.mysql.dao.Dao;
 import org.banish.mysql.database.IDataSource;
+import org.banish.mysql.orm.IndexMeta;
 
 /**
  * @author YY
@@ -50,7 +51,7 @@ public class DDL {
 		@Column(name = "Key_name", comment = "索引名")
 		private String name;
 		@Column(name = "Non_unique", comment = "是否唯一索引")
-		private int unique;
+		private int nonUnique;
 		@Column(name = "Index_type", comment = "索引类型")
 		private String way;
 		@Column(name = "Column_name", comment = "索引使用的列名")
@@ -58,14 +59,14 @@ public class DDL {
 		public String getName() {
 			return name;
 		}
-		public int getUnique() {
-			return unique;
-		}
 		public String getWay() {
 			return way;
 		}
 		public String getColumnName() {
 			return columnName;
+		}
+		public int getNonUnique() {
+			return nonUnique;
 		}
 	}
 
@@ -100,13 +101,21 @@ public class DDL {
 	/**
 	 * 删除列
 	 */
-	public final static String TABLE_DROP_COLUMN = "ALTER TABLE `#tableName#` DROP COLUMN `#columnName#`;";
+	private final static String TABLE_DROP_COLUMN = "ALTER TABLE `%s` DROP COLUMN `%s`;";
 
+	public static String getTableDropColumn(String tableName, String columnName) {
+		return String.format(TABLE_DROP_COLUMN, tableName, columnName);
+	}
+	
 	/**
 	 * 增加列
 	 */
-	public final static String TABLE_ADD_COLUMN = "ALTER TABLE `#tableName#` ADD COLUMN #columnDefine#;";
+	private final static String TABLE_ADD_COLUMN = "ALTER TABLE `%s` ADD COLUMN %s;";
 
+	public static String getTableAddColumn(String tableName, String columnDefine) {
+		return String.format(TABLE_ADD_COLUMN, tableName, columnDefine);
+	}
+	
 	/**
 	 * 修改列属性
 	 */
@@ -115,13 +124,23 @@ public class DDL {
 	/**
 	 * 增加索引
 	 */
-	public final static String TABLE_ADD_INDEX = "ALTER TABLE `#tableName#` ADD #indexType# INDEX `#indexName#` (#columnName#) USING #indexWay#;";
+	private final static String TABLE_ADD_INDEX = "ALTER TABLE `%s` ADD %s INDEX `%s` (%s) USING %s;";
+	
+	public static String getTableAddIndex(String tableName, IndexMeta indexMeta) {
+		return String.format(TABLE_ADD_INDEX, tableName, indexMeta.getType().value(), indexMeta.getName(),
+				indexMeta.getColumnsString(), indexMeta.getWay().value());
+	}
 	
 	/**
 	 * 修改索引
 	 */
-	public final static String TABLE_MODIFY_INDEX = "ALTER TABLE `#tableName#` DROP INDEX `#oriIndex#`, ADD #indexType# INDEX `#indexName#` (#columnName#) USING #indexWay#;";
+	private final static String TABLE_MODIFY_INDEX = "ALTER TABLE `%s` DROP INDEX `%s`, ADD %s INDEX `%s` (%s) USING %s;";
 
+	public static String getTableModifyIndex(String tableName, IndexMeta indexMeta) {
+		return String.format(TABLE_MODIFY_INDEX, tableName, indexMeta.getName(), indexMeta.getType().value(), indexMeta.getName(),
+				indexMeta.getColumnsString(), indexMeta.getWay().value());
+	}
+	
 	/**
 	 * 查询最大ID
 	 */

@@ -137,7 +137,7 @@ public class TableBuilder {
 			String columnName = tableDes.getField();
 			if (!columnMetas.containsKey(columnName)) {
 				// 删除列
-				String ddlSql = DDL.TABLE_DROP_COLUMN.replaceAll("#tableName#", tableName).replaceAll("#columnName#", columnName);
+				String ddlSql = DDL.getTableDropColumn(tableName, columnName);
 				if(autoBuild) {
 					Dao.executeSql(baseDao.getDataSource(), ddlSql);
 				}
@@ -154,8 +154,7 @@ public class TableBuilder {
 			
 			if (!dbColumns.containsKey(entry.getKey())) {
 				// 新增列
-				String ddlSql = DDL.TABLE_ADD_COLUMN.replaceAll("#tableName#", tableName).replaceAll(
-						"#columnDefine#", getColumnDefine(columnMeta));
+				String ddlSql = DDL.getTableAddColumn(tableName, getColumnDefine(columnMeta));
 				if(autoBuild) {
 					Dao.executeSql(baseDao.getDataSource(), ddlSql);
 				}
@@ -221,14 +220,10 @@ public class TableBuilder {
 		Map<String, IndexMeta> entityIndexes = baseDao.getEntityMeta().getIndexMap();
 		// 以实体类为基准比对数据表中的索引状态
 		for(IndexMeta entityIndex : entityIndexes.values()) {
-			IndexMeta dbIndex = indexMap.get(entityIndex.getName().toUpperCase());
+			IndexMeta dbIndex = indexMap.get(entityIndex.getName());
 			if(dbIndex == null) {
 				//添加索引
-				String ddlSql = DDL.TABLE_ADD_INDEX.replaceAll("#tableName#", tableName)
-						.replaceAll("#indexType#", entityIndex.getType().value())
-						.replaceAll("#indexName#", entityIndex.getName())
-						.replaceAll("#columnName#", entityIndex.getColumnsString())
-						.replaceAll("#indexWay#", entityIndex.getWay().value());
+				String ddlSql = DDL.getTableAddIndex(tableName, entityIndex);
 				if(autoBuild) {
 					Dao.executeSql(baseDao.getDataSource(), ddlSql);
 				}
@@ -238,12 +233,7 @@ public class TableBuilder {
 				if (entityIndex.getType() != dbIndex.getType() || entityIndex.getWay() != dbIndex.getWay()
 						|| !entityIndex.getColumns().equals(dbIndex.getColumns())) {
 					//更新索引
-					String ddlSql = DDL.TABLE_MODIFY_INDEX.replaceAll("#tableName#", tableName)
-							.replaceAll("#oriIndex#", dbIndex.getName())
-							.replaceAll("#indexType#", entityIndex.getType().value())
-							.replaceAll("#indexName#", entityIndex.getName())
-							.replaceAll("#columnName#", entityIndex.getColumnsString())
-							.replaceAll("#indexWay#", entityIndex.getWay().value());
+					String ddlSql = DDL.getTableModifyIndex(tableName, entityIndex);
 					if(autoBuild) {
 						Dao.executeSql(baseDao.getDataSource(), ddlSql);
 					}
@@ -268,14 +258,14 @@ public class TableBuilder {
 		// 表中已有的索引<索引名字，索引对象>
 		Map<String, IndexMeta> indexMap = new HashMap<>();
 		for (IndexStruct indexStruct : keys) {
-			String indexName = indexStruct.getName().toUpperCase();
+			String indexName = indexStruct.getName();
 			IndexMeta index = indexMap.get(indexName);
 			if(index == null) {
 				index = new IndexMeta();
 				index.setName(indexName);
 				//索引的类型
-				int isUnique = indexStruct.getUnique();
-				index.setType(isUnique == 0 ? IndexType.UNIQUE : IndexType.NORMAL);
+				int isNonUnique = indexStruct.getNonUnique();
+				index.setType(isNonUnique == 0 ? IndexType.UNIQUE : IndexType.NORMAL);
 				//索引的方式
 				String way = indexStruct.getWay();
 				index.setWay(!"BTREE".equals(way) ? IndexWay.HASH : IndexWay.BTREE);
