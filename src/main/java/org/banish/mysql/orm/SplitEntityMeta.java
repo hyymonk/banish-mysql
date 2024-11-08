@@ -11,7 +11,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 
 import org.banish.mysql.annotation.SplitTable;
-import org.banish.mysql.annotation.SplitTable.SplitWay;
+import org.banish.mysql.annotation.enuma.SplitWay;
 import org.banish.mysql.orm.column.ColumnMeta;
 import org.banish.mysql.orm.column.DateColumnMeta;
 import org.banish.mysql.orm.column.IntegerColumnMeta;

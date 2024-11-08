@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.banish.mysql.AbstractEntity;
-import org.banish.mysql.annotation.SplitTable.SplitWay;
+import org.banish.mysql.annotation.enuma.SplitWay;
 import org.banish.mysql.database.IDataSource;
 import org.banish.mysql.orm.SplitEntityMeta;
 import org.banish.mysql.table.TableBuilder;

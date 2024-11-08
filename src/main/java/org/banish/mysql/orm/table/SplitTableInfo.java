@@ -5,9 +5,9 @@ package org.banish.mysql.orm.table;
 
 import org.banish.mysql.annotation.Index;
 import org.banish.mysql.annotation.SplitTable;
-import org.banish.mysql.annotation.SplitTable.SplitWay;
 import org.banish.mysql.annotation.enuma.AsyncType;
 import org.banish.mysql.annotation.enuma.Charset;
+import org.banish.mysql.annotation.enuma.SplitWay;
 
 /**
  * @author YY

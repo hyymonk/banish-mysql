@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 
 import org.banish.mysql.annotation.enuma.AsyncType;
 import org.banish.mysql.annotation.enuma.Charset;
+import org.banish.mysql.annotation.enuma.SplitWay;
 
 /**
  * @author YY
@@ -70,18 +71,4 @@ public @interface SplitTable {
 	 * @return
 	 */
 	public String byColumn();
-	/**
-	 * @author YY
-	 * 分表方式
-	 */
-	public static enum SplitWay {
-		NULL,
-		MINUTE,	//每分钟进行分表，多用于测试
-		HOUR,	//每小时进行分表
-		DAY,	//每天时进行分表
-		WEEK,	//每周时进行分表
-		MONTH,	//每月时进行分表
-		YEAR,	//每年时进行分表
-		VALUE,	//根据该字段的值进行分表
-	}
 }
