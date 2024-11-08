@@ -6,7 +6,6 @@ package org.banish.mysql.table.dml;
 
 import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.column.ColumnMeta;
-import static org.banish.mysql.table.Symbol.DOT;
 
 /**
  * @author YY
@@ -48,7 +47,7 @@ public class DefaultSql<T> implements ISql<T> {
 	 * @return
 	 */
 	private String select(EntityMeta<T> entityMeta) {
-		return "SELECT * FROM " + DOT + TABLE_NAME + DOT + " WHERE " + DOT + entityMeta.getPrimaryKeyMeta().getColumnName() + DOT + "=?";
+		return String.format("SELECT * FROM `%s` WHERE `%s`=?", TABLE_NAME, entityMeta.getPrimaryKeyMeta().getColumnName());
 	}
 	/**
 	 * 查询整个表数据的SQL
@@ -56,7 +55,7 @@ public class DefaultSql<T> implements ISql<T> {
 	 * @return
 	 */
 	private String selectAll(EntityMeta<T> entityMeta) {
-		return "SELECT * FROM " + DOT + TABLE_NAME + DOT;
+		return String.format("SELECT * FROM `%s`", TABLE_NAME);
 	}
 	/**
 	 * 插入数据的SQL
@@ -65,13 +64,13 @@ public class DefaultSql<T> implements ISql<T> {
 	 */
 	private String insert(EntityMeta<T> entityMeta) {
 		StringBuilder sql = new StringBuilder();
-		sql.append("INSERT INTO " + DOT + TABLE_NAME + DOT + " (");
+		sql.append(String.format("INSERT INTO `%s` (", TABLE_NAME));
 		boolean isFirst = true;
 		for(ColumnMeta column : entityMeta.getColumnList()) {
 			if(!isFirst) {
 				sql.append(",");
 			}
-			sql.append(DOT + column.getColumnName() + DOT);
+			sql.append(String.format("`%s`", column.getColumnName()));
 			isFirst = false;
 		}
 		sql.append(") VALUES (");
@@ -93,19 +92,22 @@ public class DefaultSql<T> implements ISql<T> {
 	 */
 	private String update(EntityMeta<T> entityMeta) {
 		StringBuilder sql = new StringBuilder();
-		sql.append("UPDATE " + DOT + TABLE_NAME + DOT + " SET ");
+		sql.append(String.format("UPDATE `%s` SET ", TABLE_NAME));
 		boolean isFirst = true;
 		for(ColumnMeta column : entityMeta.getColumnList()) {
 			if(column.isReadonly()) {
 				continue;
 			}
+			if(column == entityMeta.getPrimaryKeyMeta()) {
+				continue;
+			}
 			if(!isFirst) {
 				sql.append(",");
 			}
-			sql.append(DOT + column.getColumnName() + DOT).append("=?");
+			sql.append(String.format("`%s`=?", column.getColumnName()));
 			isFirst = false;
 		}
-		sql.append(" WHERE " + DOT + entityMeta.getPrimaryKeyMeta().getColumnName() + DOT + "=?");
+		sql.append(String.format(" WHERE `%s`=?", entityMeta.getPrimaryKeyMeta().getColumnName()));
 		return sql.toString();
 	}
 	/**
@@ -114,7 +116,7 @@ public class DefaultSql<T> implements ISql<T> {
 	 * @return
 	 */
 	private String delete(EntityMeta<T> entityMeta) {
-		return "DELETE FROM " + DOT + TABLE_NAME + DOT + " WHERE " + DOT + entityMeta.getPrimaryKeyMeta().getColumnName() + DOT + "=?";
+		return String.format("DELETE FROM `%s` WHERE `%s`=?", TABLE_NAME, entityMeta.getPrimaryKeyMeta().getColumnName());
 	}
 	/**
 	 * 删除某个表所有数据的SQL
@@ -122,7 +124,7 @@ public class DefaultSql<T> implements ISql<T> {
 	 * @return
 	 */
 	private String deleteAll(EntityMeta<T> entityMeta) {
-		return "DELETE FROM " + DOT + TABLE_NAME + DOT;
+		return String.format("DELETE FROM `%s`", TABLE_NAME);
 	}
 	/**
 	 * 查询表中的数据条数
@@ -130,7 +132,7 @@ public class DefaultSql<T> implements ISql<T> {
 	 * @return
 	 */
 	private String countAll(EntityMeta<T> entityMeta) {
-		return "SELECT count(1) AS number FROM " + DOT + TABLE_NAME + DOT;
+		return String.format("SELECT count(1) AS number FROM `%s`", TABLE_NAME);
 	}
 	
 	@Override
@@ -148,13 +150,13 @@ public class DefaultSql<T> implements ISql<T> {
 	
 	public String insertUpdate(EntityMeta<T> entityMeta, int dataCount) {
 		StringBuilder sql = new StringBuilder();
-		sql.append("INSERT INTO " + DOT + TABLE_NAME + DOT + " (");
+		sql.append(String.format("INSERT INTO `%s` (", TABLE_NAME));
 		boolean isFirst = true;
 		for(ColumnMeta column : entityMeta.getColumnList()) {
 			if(!isFirst) {
 				sql.append(",");
 			}
-			sql.append(DOT + column.getColumnName() + DOT);
+			sql.append(String.format("`%s`=?", column.getColumnName()));
 			isFirst = false;
 		}
 		sql.append(") VALUES ");
@@ -181,7 +183,7 @@ public class DefaultSql<T> implements ISql<T> {
 		sql.append(" ON DUPLICATE KEY UPDATE ");
 		isFirst = true;
 		for (ColumnMeta columnMeta : entityMeta.getColumnList()) {
-			if (columnMeta.getColumnName().equals(entityMeta.getPrimaryKeyMeta().getColumnName())) {
+			if (columnMeta == entityMeta.getPrimaryKeyMeta()) {
 				continue;
 			}
 			if(columnMeta.isReadonly()) {
@@ -191,7 +193,7 @@ public class DefaultSql<T> implements ISql<T> {
 				sql.append(",");
 			}
 			isFirst = false;
-			sql.append(DOT + columnMeta.getColumnName() + DOT + " = VALUES(" + columnMeta.getColumnName() + ")");
+			sql.append(String.format("`%s`= VALUES(%s)", columnMeta.getColumnName(), columnMeta.getColumnName()));
 		}
 		return sql.toString();
 	}

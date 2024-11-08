@@ -4,16 +4,25 @@
 package org.banish.mysql.table.ddl;
 
 import org.banish.mysql.annotation.Column;
+import org.banish.mysql.dao.Dao;
+import org.banish.mysql.database.IDataSource;
 
 /**
  * @author YY
  *
  */
-public class SqlDefine {
+public class DDL {
+	
+	
 	/**
 	 * 查询是否存在表
 	 */
-	public final static String SELECT_TABLE_NAME = "SELECT `TABLE_NAME` FROM `INFORMATION_SCHEMA`.`TABLES` WHERE `TABLE_SCHEMA`=? AND `TABLE_NAME`=?;";
+	private final static String SELECT_TABLE_NAME = "SELECT `TABLE_NAME` FROM `INFORMATION_SCHEMA`.`TABLES` WHERE `TABLE_SCHEMA`=? AND `TABLE_NAME`=?;";
+	
+	public static boolean isTableExist(IDataSource dataSource, String dbName, String tableName) {
+		TableExist tableExist = Dao.queryAliasObject(dataSource, TableExist.class, SELECT_TABLE_NAME, dbName, tableName);
+		return tableExist != null;
+	} 
 	
 	public static class TableExist {
 		@Column(name = "TABLE_NAME", comment = "表名")

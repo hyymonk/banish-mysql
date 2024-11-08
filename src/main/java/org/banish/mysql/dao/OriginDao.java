@@ -8,7 +8,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 import org.banish.mysql.AbstractEntity;
@@ -146,10 +145,11 @@ public abstract class OriginDao<T extends AbstractEntity> {
 			connection = this.dataSource.getConnection();
 			statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 			
+			LocalDateTime now = LocalDateTime.now();
 			for(int j = 0; j < ts.size(); j++) {
 				T t = ts.get(j);
-				t.setInsertTime(LocalDateTime.now());
-				t.setUpdateTime(LocalDateTime.now());
+				t.setInsertTime(now);
+				t.setUpdateTime(now);
 				for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
 					ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);
 					Object obj = columnMeta.takeValue(t);
@@ -186,10 +186,11 @@ public abstract class OriginDao<T extends AbstractEntity> {
 			connection = this.dataSource.getConnection();
 			statement = connection.prepareStatement(sql);
 			
+			LocalDateTime now = LocalDateTime.now();
 			for(int j = 0; j < ts.size(); j++) {
 				T t = ts.get(j);
-				t.setInsertTime(LocalDateTime.now());
-				t.setUpdateTime(LocalDateTime.now());
+				t.setInsertTime(now);
+				t.setUpdateTime(now);
 				for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
 					ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);
 					Object obj = columnMeta.takeValue(t);
@@ -218,63 +219,13 @@ public abstract class OriginDao<T extends AbstractEntity> {
 		PreparedStatement statement = null;
 		String sql = "";
 		try {
-			t.setUpdateTime(LocalDateTime.now());
 			connection = this.dataSource.getConnection();
 			sql = this.getSql(t).update();
 			statement = connection.prepareStatement(sql);
-			int index = 0;
-			for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
-				ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);
-				if(columnMeta.isReadonly()) {
-					continue;
-				} else {
-					
-				}
-				index += 1;
-				Object obj = columnMeta.takeValue(t);
-				statement.setObject(index, obj);
-			}
-			//设置ID参数值
-			statement.setObject(index + 1, getEntityMeta().getPrimaryKeyValue(t));
+			
+			t.setUpdateTime(LocalDateTime.now());
+			setUpdateValues(statement, t);
 			statement.executeUpdate();
-		} catch (Exception e) {
-			logger.error("{}.update error with sql {}", this.getEntityMeta().getTableName(), sql);
-			throw new RuntimeException(e);
-		} finally {
-			Dao.close(null, statement, connection);
-		}
-	}
-	
-	public boolean updateWhen(T t, String when) {
-		Connection connection = null;
-		PreparedStatement statement = null;
-		String sql = "";
-		try {
-			t.setUpdateTime(LocalDateTime.now());
-			connection = this.dataSource.getConnection();
-			sql = this.getSql(t).update();
-			sql += " AND " + when;
-			statement = connection.prepareStatement(sql);
-			int index = 0;
-			for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
-				ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);
-				if(columnMeta.isReadonly()) {
-					continue;
-				} else {
-					
-				}
-				index += 1;
-				Object obj = columnMeta.takeValue(t);
-				statement.setObject(index, obj);
-			}
-			//设置ID参数值
-			statement.setObject(index + 1, getEntityMeta().getPrimaryKeyValue(t));
-			int result = statement.executeUpdate();
-			if(result > 0) {
-				return true;
-			} else {
-				return false;
-			}
 		} catch (Exception e) {
 			logger.error("{}.update error with sql {}", this.getEntityMeta().getTableName(), sql);
 			throw new RuntimeException(e);
@@ -298,21 +249,12 @@ public abstract class OriginDao<T extends AbstractEntity> {
 		try {
 			connection = this.dataSource.getConnection();
 			statement = connection.prepareStatement(sql);
+			
+			LocalDateTime now = LocalDateTime.now();
 			for(int j = 0; j < ts.size(); j++) {
 				T t = ts.get(j);
-				t.setUpdateTime(LocalDateTime.now());
-				int index = 0;
-				for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
-					ColumnMeta column = getEntityMeta().getColumnList().get(i);
-					if(column.isReadonly()) {
-						continue;
-					}
-					index += 1;
-					Object obj = column.takeValue(t);
-					statement.setObject(index, obj);
-				}
-				//设置ID参数值
-				statement.setObject(index + 1, getEntityMeta().getPrimaryKeyValue(t));
+				t.setUpdateTime(now);
+				setUpdateValues(statement, t);
 				statement.addBatch();
 			}
 			statement.executeBatch();
@@ -322,6 +264,24 @@ public abstract class OriginDao<T extends AbstractEntity> {
 		} finally {
 			Dao.close(null, statement, connection);
 		}
+	}
+	
+	private void setUpdateValues(PreparedStatement statement, T t) throws Exception {
+		int index = 0;
+		for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
+			ColumnMeta column = getEntityMeta().getColumnList().get(i);
+			if(column.isReadonly()) {
+				continue;
+			}
+			if(column == getEntityMeta().getPrimaryKeyMeta()) {
+				continue;
+			}
+			index += 1;
+			Object obj = column.takeValue(t);
+			statement.setObject(index, obj);
+		}
+		//设置ID参数值
+		statement.setObject(index + 1, getEntityMeta().getPrimaryKeyValue(t));
 	}
 
 	/**
@@ -350,7 +310,6 @@ public abstract class OriginDao<T extends AbstractEntity> {
 	 * 删除多个数据，不建议进行物理删除
 	 */
 	public abstract void deleteAll(List<T> ts);
-	
 	/**
 	 * 根据where条件删除数据，不建议进行物理删除
 	 * @param where
@@ -358,20 +317,17 @@ public abstract class OriginDao<T extends AbstractEntity> {
 	 * @return
 	 */
 	public abstract void deleteWhere(String where, Object... params);
-	
 	/**
 	 * 根据ID查询数据
 	 * @param id
 	 * @return
 	 */
-	public abstract T query(Object id);
-	
+	public abstract T query(Object primaryKey);
 	/**
 	 * 查询整个表的数据
 	 * @return
 	 */
 	public abstract List<T> queryAll();
-	
 	/**
 	 * 根据where条件查询单条数据
 	 * @param where
@@ -386,52 +342,14 @@ public abstract class OriginDao<T extends AbstractEntity> {
 	 * @return
 	 */
 	public abstract List<T> queryListWhere(String where, Object... params);
-	
-	public abstract long count(String where, Object... params);
-	
-	public long count(String tableName, String where, Object... params) {
-		return ReadOnlyDao.count(dataSource, tableName, where, params);
-	}
-	
 	/**
-	 * 进行数据库查询，返回特定的数据对象列表
-	 * 适用于对A表进行统计查询，返回结构B的数据对象
-	 * @param clazz
-	 * @param sql 需要提供出完整SQL
+	 * 统计符合条件的数据数量
+	 * @param where
 	 * @param params
 	 * @return
 	 */
-	public <U> List<U> queryAliasObjects(Class<U> clazz, String sql, Object... params) {
-		return ReadOnlyDao.queryAliasObjects(dataSource, clazz, sql, params);
-	}
+	public abstract long count(String where, Object... params);
 	
-	public <U> U queryAliasObject(Class<U> clazz, String sql, Object... params) {
-		return ReadOnlyDao.queryAliasObject(dataSource, clazz, sql, params);
-	}
-	
-	public List<T> queryObjects(String tableName, String where, Object... params) {
-		String sql = "SELECT * FROM " + tableName + " " + where;
-		return ReadOnlyDao.queryAliasObjects(dataSource, this.getEntityMeta().getClazz(), sql, params);
-	}
-	
-	public void executeSql(String sql, Object... params) {
-		Connection connection = null;
-		PreparedStatement statement = null;
-		try {
-			connection = this.dataSource.getConnection();
-			statement = connection.prepareStatement(sql);
-			for(int i = 0; i < params.length; i++) {
-				statement.setObject(i + 1, params[i]);
-			}
-			statement.executeUpdate();
-		} catch (Exception e) {
-			logger.error("{}.executeSql error with sql {}, params {}", this.getEntityMeta().getTableName(), sql, Arrays.toString(params));
-			throw new RuntimeException(e);
-		} finally {
-			Dao.close(null, statement, connection);
-		}
-	}
-
 	public IDataSource getDataSource() {
 		return dataSource;
 	}

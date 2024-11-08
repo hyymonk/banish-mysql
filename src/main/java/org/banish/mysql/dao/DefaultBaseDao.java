@@ -273,12 +273,14 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 			connection = this.getDataSource().getConnection();
 			statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 			
+			LocalDateTime now = LocalDateTime.now();
+			
 			for(int j = 0; j < ts.size(); j++) {
 				T t = ts.get(j);
 				if(t.getInsertTime() == null) {
-					t.setInsertTime(LocalDateTime.now());
+					t.setInsertTime(now);
 				}
-				t.setUpdateTime(LocalDateTime.now());
+				t.setUpdateTime(now);
 				int offset = getEntityMeta().getColumnList().size() * j;
 				for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
 					ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);

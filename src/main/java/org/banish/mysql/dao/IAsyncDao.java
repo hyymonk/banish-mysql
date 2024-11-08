@@ -14,29 +14,33 @@ import org.banish.mysql.orm.IAsyncEntityMeta;
  */
 public interface IAsyncDao<T> {
 	
-	public void insertNow(T t);
-	public void insertAllNow(List<T> ts);
-	public void updateNow(T t);
-	public void updateAllNow(List<T> ts);
+	void insertNow(T t);
+	void insertAllNow(List<T> ts);
+	void updateNow(T t);
+	void updateAllNow(List<T> ts);
 	
-	public AsyncDaoPlugin<T> getAsyncPlugin();
+	AsyncDaoPlugin<T> getAsyncPlugin();
 	
 	//insert、insertAll、update、updateAll四个函数不能使用默认的接口实现方式
-	public void insert(T t);
-	public void insertAll(List<T> ts);
-	public void update(T t);
-	public void updateAll(List<T> ts);
+	void insert(T t);
+	void insertAll(List<T> ts);
+	void update(T t);
+	void updateAll(List<T> ts);
+	
+	IAsyncEntityMeta getAsyncMeta();
+	
+	Object[] getValues(T t);
 	
 	/**
 	 * 在异步中调用的insert函数
 	 */
-	default public void insert() {
+	default void insert() {
 		getAsyncPlugin().insert();
 	}
 	/**
 	 * 在异步中调用的insertAll函数
 	 */
-	default public int insertAllNow() {
+	default int insertAllNow() {
 		return getAsyncPlugin().insertAllNow();
 	}
 	/**
@@ -48,30 +52,29 @@ public interface IAsyncDao<T> {
 	 * 								3、list.add(t)先于特征码的移除，即对象已经被放入更新列表
 	 * 通过上面分析，即使这种情况发生，也不会导致数据没有更新
 	 */
-	default public void update() {
+	default void update() {
 		getAsyncPlugin().update();
 	}
 	/**
 	 * 在异步中调用的updateAll函数
 	 */
-	default public int updateAllNow() {
+	default int updateAllNow() {
 		return getAsyncPlugin().updateAllNow();
 	}
 	
-	public IAsyncEntityMeta getAsyncMeta();
-	
-	default public AsyncType getAsyncType() {
+	default AsyncType getAsyncType() {
 		return getAsyncMeta().getAsyncType();
 	}
-	default public int getAsyncSize() {
+
+	default int getAsyncSize() {
 		return getAsyncMeta().getAsyncSize();
 	}
-	default public int getAsyncDelay() {
+
+	default int getAsyncDelay() {
 		return getAsyncMeta().getAsyncDelay();
 	}
-	default public String getAsyncName() {
+
+	default String getAsyncName() {
 		return getAsyncMeta().getAsyncName();
 	}
-	
-	public Object[] getValues(T t);
 }

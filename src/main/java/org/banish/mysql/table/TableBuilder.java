@@ -4,6 +4,8 @@
 package org.banish.mysql.table;
 
 
+import static org.banish.mysql.table.Symbol.DOT;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,17 +22,15 @@ import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.IndexMeta;
 import org.banish.mysql.orm.column.ColumnMeta;
 import org.banish.mysql.orm.column.PrimaryKeyColumnMeta;
-import org.banish.mysql.table.ddl.SqlDefine;
-import org.banish.mysql.table.ddl.SqlDefine.IndexStruct;
-import org.banish.mysql.table.ddl.SqlDefine.MysqlVersion;
-import org.banish.mysql.table.ddl.SqlDefine.TableDes;
-import org.banish.mysql.table.ddl.SqlDefine.TableExist;
-import org.banish.mysql.table.ddl.SqlDefine.TableMaxId;
-import org.banish.mysql.table.ddl.SqlDefine.TableStatus;
+import org.banish.mysql.table.ddl.DDL;
+import org.banish.mysql.table.ddl.DDL.IndexStruct;
+import org.banish.mysql.table.ddl.DDL.MysqlVersion;
+import org.banish.mysql.table.ddl.DDL.TableDes;
+import org.banish.mysql.table.ddl.DDL.TableExist;
+import org.banish.mysql.table.ddl.DDL.TableMaxId;
+import org.banish.mysql.table.ddl.DDL.TableStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.banish.mysql.table.Symbol.DOT;
 /**
  * @author YY
  *
@@ -55,8 +55,7 @@ public class TableBuilder {
 		
 		List<String> ddlSqls = new ArrayList<>();
 		
-		TableExist tableExist = dao.queryAliasObject(SqlDefine.TableExist.class, SqlDefine.SELECT_TABLE_NAME, dbName, tableName);
-		if (tableExist == null) {
+		if (!DDL.isTableExist(dao.getDataSource(), dbName, tableName)) {
 			// 创建数据表
 			String ddlSql = createTable(dao, tableName);
 			ddlSqls.add(ddlSql);
@@ -131,7 +130,7 @@ public class TableBuilder {
 		List<String> updateDdlSqls = new ArrayList<>();
 		
 		//查询数据库中的字段定义
-		String sql = SqlDefine.TABLE_DES.replaceAll("#tableName#", tableName);
+		String sql = DDL.TABLE_DES.replaceAll("#tableName#", tableName);
 		List<TableDes> tableDesList = baseDao.queryAliasObjects(TableDes.class, sql);
 		
 		// 数据表列的名字与数据类型集合
@@ -145,7 +144,7 @@ public class TableBuilder {
 			String columnName = tableDes.getField();
 			if (!columnMetas.containsKey(columnName)) {
 				// 删除列
-				String ddlSql = SqlDefine.TABLE_DROP_COLUMN.replaceAll("#tableName#", tableName).replaceAll("#columnName#", columnName);
+				String ddlSql = DDL.TABLE_DROP_COLUMN.replaceAll("#tableName#", tableName).replaceAll("#columnName#", columnName);
 				if(autoBuild) {
 					baseDao.executeSql(ddlSql);
 				}
@@ -162,7 +161,7 @@ public class TableBuilder {
 			
 			if (!dbColumns.containsKey(entry.getKey())) {
 				// 新增列
-				String ddlSql = SqlDefine.TABLE_ADD_COLUMN.replaceAll("#tableName#", tableName).replaceAll(
+				String ddlSql = DDL.TABLE_ADD_COLUMN.replaceAll("#tableName#", tableName).replaceAll(
 						"#columnDefine#", getColumnDefine(columnMeta));
 				if(autoBuild) {
 					baseDao.executeSql(ddlSql);
@@ -178,7 +177,7 @@ public class TableBuilder {
 					continue;
 				}
 				// 修改列
-				String ddlSql = SqlDefine.TABLE_CHANGE_COLUMN.replaceAll("#tableName#", tableName).replaceAll("#columnName#", entry.getKey())
+				String ddlSql = DDL.TABLE_CHANGE_COLUMN.replaceAll("#tableName#", tableName).replaceAll("#columnName#", entry.getKey())
 						.replaceAll("#columnDefine#", getColumnDefine(columnMeta));
 				if(autoBuild) {
 					baseDao.executeSql(ddlSql);
@@ -236,7 +235,7 @@ public class TableBuilder {
 			IndexMeta dbIndex = indexMap.get(entityIndex.getName().toUpperCase());
 			if(dbIndex == null) {
 				//添加索引
-				String ddlSql = SqlDefine.TABLE_ADD_INDEX.replaceAll("#tableName#", tableName)
+				String ddlSql = DDL.TABLE_ADD_INDEX.replaceAll("#tableName#", tableName)
 						.replaceAll("#indexType#", entityIndex.getType().value())
 						.replaceAll("#indexName#", entityIndex.getName())
 						.replaceAll("#columnName#", entityIndex.getColumnsString())
@@ -250,7 +249,7 @@ public class TableBuilder {
 				if (entityIndex.getType() != dbIndex.getType() || entityIndex.getWay() != dbIndex.getWay()
 						|| !entityIndex.getColumns().equals(dbIndex.getColumns())) {
 					//更新索引
-					String ddlSql = SqlDefine.TABLE_MODIFY_INDEX.replaceAll("#tableName#", tableName)
+					String ddlSql = DDL.TABLE_MODIFY_INDEX.replaceAll("#tableName#", tableName)
 							.replaceAll("#oriIndex#", dbIndex.getName())
 							.replaceAll("#indexType#", entityIndex.getType().value())
 							.replaceAll("#indexName#", entityIndex.getName())
@@ -274,8 +273,8 @@ public class TableBuilder {
 	 */
 	private static Map<String, IndexMeta> getDbIndex(OriginDao<?> dao, String tableName) {
 		// 查询当前表格索引
-		String sql = SqlDefine.SHOW_KEYS.replaceAll("#tableName#", tableName);
-		List<IndexStruct> result = dao.queryAliasObjects(SqlDefine.IndexStruct.class, sql);
+		String sql = DDL.SHOW_KEYS.replaceAll("#tableName#", tableName);
+		List<IndexStruct> result = dao.queryAliasObjects(DDL.IndexStruct.class, sql);
 		
 		// 表中已有的索引<索引名字，索引对象>
 		Map<String, IndexMeta> indexMap = new HashMap<>();
@@ -322,24 +321,24 @@ public class TableBuilder {
 		List<String> ddlSqls = new ArrayList<>();
 		
 		//查询出当前表中最大的自增主键
-		String selectMaxId = SqlDefine.SELECT_MAX_ID.replaceAll("#id#", keyMeta.getColumnName())
+		String selectMaxId = DDL.SELECT_MAX_ID.replaceAll("#id#", keyMeta.getColumnName())
 				.replaceAll("#tableName#", tableName);
 		
 		TableMaxId tableMaxId = baseDao.queryAliasObject(TableMaxId.class, selectMaxId);
 		long currMaxId = tableMaxId.getMaxId();
 		
-		String ddlSql = SqlDefine.SET_AUTO_INCREMENT.replaceAll("#tableName#", tableName);
+		String ddlSql = DDL.SET_AUTO_INCREMENT.replaceAll("#tableName#", tableName);
 		
 		
-		MysqlVersion mysqlVersion = baseDao.queryAliasObject(MysqlVersion.class, SqlDefine.MYSQL_VERSION);
+		MysqlVersion mysqlVersion = baseDao.queryAliasObject(MysqlVersion.class, DDL.MYSQL_VERSION);
 		//自增主键的检查
 		long currAutoId = 0;
 		if(mysqlVersion.getVersion().startsWith("8")) {
 			String tableFullName = baseDao.getDataSource().getDbName() + "/" + tableName;
-			TableStatus tableStatus = baseDao.queryAliasObject(TableStatus.class, SqlDefine.TABLE_AUTOINC_8, tableFullName);
+			TableStatus tableStatus = baseDao.queryAliasObject(TableStatus.class, DDL.TABLE_AUTOINC_8, tableFullName);
 			currAutoId = tableStatus.getAutoIncrement();
 		} else {
-			TableStatus tableStatus = baseDao.queryAliasObject(TableStatus.class, SqlDefine.TABLE_AUTOINC_5, tableName);
+			TableStatus tableStatus = baseDao.queryAliasObject(TableStatus.class, DDL.TABLE_AUTOINC_5, tableName);
 			currAutoId = tableStatus.getAutoIncrement();
 		}
 		if(currMaxId >= currAutoId) {
