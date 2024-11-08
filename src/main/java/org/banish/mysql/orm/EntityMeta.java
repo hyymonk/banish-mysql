@@ -75,7 +75,11 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	
 	protected EntityMeta(Class<T> clazz, ITable table) {
 		this.clazz = clazz;
-		this.tableName = table.name();
+		if("".equals(table.name())) {
+			this.tableName = IEntityMeta.makeSnakeCase(clazz.getSimpleName());
+		} else {
+			this.tableName = table.name().toLowerCase();
+		}
 		this.tableComment = table.comment();
 		this.tableCharset = table.charset();
 		this.dbAlias = table.dbAlias();
@@ -97,21 +101,8 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 		this.indexMap = Collections.unmodifiableMap(IndexMeta.build(table, columnList));
 		
 		this.fieldToColumn = new HashMap<>();
-		
-		boolean hasUpperCasse = false;
 		for(ColumnMeta meta : columnList) {
-			for(int i = 0; i < meta.getColumnName().length(); i++) {
-				char c = meta.getColumnName().charAt(i);
-				if(Character.isUpperCase(c)) {
-					logger.error("{} has upper case char on field {}", clazz.getSimpleName(), meta.getFieldName());
-					hasUpperCasse = true;
-					break;
-				}
-			}
 			fieldToColumn.put(meta.getField().getName(), meta.getColumnName());
-		}
-		if(hasUpperCasse) {
-			throw new RuntimeException(tableName + " has found upper case column, check log above");
 		}
 	}
 
@@ -197,6 +188,4 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 		}
 		return customInitId;
 	}
-	
-	
 }

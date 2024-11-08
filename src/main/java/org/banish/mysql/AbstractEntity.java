@@ -15,9 +15,9 @@ import org.banish.mysql.annotation.MappedSuperclass.Priority;
  */
 @MappedSuperclass(sort = Priority.FIRST)
 public abstract class AbstractEntity {
-	@Column(name = "insert_time", comment = "插入时间", readonly = true)
+	@Column(comment = "插入时间", readonly = true)
 	private LocalDateTime insertTime;
-	@Column(name = "update_time", comment = "更新时间")
+	@Column(comment = "更新时间")
 	private LocalDateTime updateTime;
 	
 	public final LocalDateTime getInsertTime() {

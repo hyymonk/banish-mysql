@@ -25,7 +25,7 @@ public @interface SplitTable {
 	 * 表名
 	 * @return
 	 */
-	public String name();
+	public String name() default "";
 	/**
 	 * 表注释
 	 * @return

@@ -125,7 +125,7 @@ public class DDL {
 	/**
 	 * 查询最大ID
 	 */
-	private final static String SELECT_MAX_ID = "SELECT max(`%s`) as maxid FROM `%s` LIMIT 1;";
+	private final static String SELECT_MAX_ID = "SELECT max(`%s`) as max_id FROM `%s` LIMIT 1;";
 	
 	public static long getTableMaxId(IDataSource dataSource, String tableName, String primaryKeyName) {
 		String sql = String.format(SELECT_MAX_ID, primaryKeyName, tableName);
@@ -134,7 +134,7 @@ public class DDL {
 	} 
 	
 	public static class TableMaxId {
-		@Column(name = "maxid", comment = "表的最大ID")
+		@Column(comment = "表的最大ID")
 		private long maxId;
 	}
 	

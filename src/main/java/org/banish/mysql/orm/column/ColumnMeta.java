@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.banish.mysql.annotation.Column;
 import org.banish.mysql.annotation.Id;
+import org.banish.mysql.orm.IEntityMeta;
 
 /**
  * @author YY
@@ -57,13 +58,13 @@ public abstract class ColumnMeta {
 		if(column == null) {
 			//非实体表类的结构进行查询
 			this.fieldName = this.field.getName();
-			this.columnName = this.field.getName();
+			this.columnName = IEntityMeta.makeSnakeCase(this.field.getName());
 			this.readonly = false;
 			this.comment = "";
 		} else {
 			this.fieldName = this.field.getName();
 			if("".equals(column.name())) {
-				this.columnName = this.field.getName();
+				this.columnName = IEntityMeta.makeSnakeCase(this.field.getName());
 			} else {
 				this.columnName = column.name();
 			}

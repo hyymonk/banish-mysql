@@ -20,14 +20,14 @@ import org.banish.mysql.annotation.enuma.IndexType;
 /**
  * @author YY
  */
-@Table(name = "example_entity", comment = "例子表", dbAlias = "data", indexs = {
+@Table(comment = "例子表", dbAlias = "data", indexs = {
 		@Index(name = "idx_province_code_city_code", columns = { "province_code", "city_code" }),
 		@Index(name = "idx_card_id", columns = { "card_id" }, type = IndexType.UNIQUE) })
 public class ExampleEntity extends AbstractEntity {
 	@Id(strategy = Strategy.AUTO)
 	@Column(comment = "唯一ID")
 	private long id;
-	@Column(name = "card_id", comment = "身份ID", readonly = true)
+	@Column(comment = "身份ID", readonly = true)
 	private String cardId;
 	@Column(comment = "名字")
 	private String name;
@@ -35,29 +35,29 @@ public class ExampleEntity extends AbstractEntity {
 	private byte sex;
 	@Column(comment = "年龄")
 	private short age;
-	@Column(name = "province_code", comment = "省份编码")
+	@Column(comment = "省份编码")
 	private int provinceCode;
-	@Column(name = "city_code", comment = "城市编码")
+	@Column(comment = "城市编码")
 	private int cityCode;
 	@Column(comment = "金额")
 	private long money;
 	@Column(comment = "地址")
 	private String address;
-	@Column(name = "born_time", comment = "出生时间", extra = "time")
+	@Column(comment = "出生时间", extra = "time")
 	private long bornTime;
 	@Column(comment = "描述", extra = "text")
 	private String describe;
 	@Column(comment = "爱好", length = 5000)
 	private List<String> hobbise = new ArrayList<>();
-	@Column(name = "education_infos", comment = "教育经历", extra = "text")
+	@Column(comment = "教育经历", extra = "text")
 	private List<EducationInfo> educationInfos = new ArrayList<>();
-	@Column(name = "bank_cards", comment = "银行卡信息", extra = "text")
+	@Column(comment = "银行卡信息", extra = "text")
 	private Map<String, BankCard> bankCards = new HashMap<>();
-	@Column(name = "last_pay", comment = "最后一笔支付")
+	@Column(comment = "最后一笔支付")
 	private float lastPay;
-	@Column(name = "daily_pay", comment = "今日支付")
+	@Column(comment = "今日支付")
 	private double dailyPay;
-	@Column(name = "his_pay", comment = "历史支付", extra = {"30", "2"})
+	@Column(comment = "历史支付", extra = {"30", "2"})
 	private BigDecimal hisPay = BigDecimal.ZERO;
 	@Column(comment = "是否在生")
 	private boolean alive;
@@ -262,4 +262,9 @@ public class ExampleEntity extends AbstractEntity {
 	public void setCountry(Country country) {
 		this.country = country;
 	}
+
+//	@Override
+//	public long idGenerator() {
+//		return 779621000000001L;
+//	}
 }
