@@ -5,7 +5,7 @@ package org.banish.mysql.orm;
 
 import org.banish.mysql.annotation.SplitTable;
 import org.banish.mysql.annotation.enuma.AsyncType;
-import org.banish.mysql.orm.table.LogTableInfo;
+import org.banish.mysql.orm.table.SplitTableInfo;
 
 /**
  * @author YY
@@ -20,7 +20,7 @@ public class SplitAsyncEntityMeta<T> extends SplitEntityMeta<T> implements IAsyn
 	
 	public SplitAsyncEntityMeta(Class<T> clazz) {
 		super(clazz);
-		LogTableInfo table = new LogTableInfo(clazz.getAnnotation(SplitTable.class));
+		SplitTableInfo table = new SplitTableInfo(clazz.getAnnotation(SplitTable.class));
 		this.asyncType = table.asyncType();
 		this.asyncSize = table.asyncSize();
 		this.asyncDelay = table.asyncDelay();

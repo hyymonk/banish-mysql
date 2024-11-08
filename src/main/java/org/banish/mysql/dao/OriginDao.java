@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.Id.Strategy;
 import org.banish.mysql.database.IDataSource;
-import org.banish.mysql.orm.AbstractEntity;
 import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.column.ColumnMeta;
 import org.banish.mysql.table.dml.ISql;

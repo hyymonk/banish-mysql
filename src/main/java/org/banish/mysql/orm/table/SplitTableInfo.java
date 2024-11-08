@@ -13,7 +13,7 @@ import org.banish.mysql.annotation.enuma.Charset;
  * @author YY
  *
  */
-public class LogTableInfo implements ITable {
+public class SplitTableInfo implements ITable {
 
 	private final String name;
 	private final String comment;
@@ -26,7 +26,7 @@ public class LogTableInfo implements ITable {
 	private final SplitWay way;
 	private final String byColumn;
 	
-	public LogTableInfo(SplitTable table) {
+	public SplitTableInfo(SplitTable table) {
 		this.name = table.name();
 		this.comment = table.comment();
 		this.dbAlias = table.dbAlias();

@@ -12,7 +12,7 @@ import org.banish.mysql.annotation.enuma.Charset;
  * @author YY
  *
  */
-public class TableInfo implements ITable {
+public class DefaultTableInfo implements ITable {
 
 	private final String name;
 	private final String comment;
@@ -24,7 +24,7 @@ public class TableInfo implements ITable {
 	private final int asyncDelay;
 	private final boolean autoBuild;
 	
-	public TableInfo(Table table) {
+	public DefaultTableInfo(Table table) {
 		this.name = table.name();
 		this.comment = table.comment();
 		this.dbAlias = table.dbAlias();

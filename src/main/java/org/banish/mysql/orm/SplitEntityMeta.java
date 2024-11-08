@@ -18,7 +18,7 @@ import org.banish.mysql.orm.column.IntegerColumnMeta;
 import org.banish.mysql.orm.column.LocalDateTimeColumnMeta;
 import org.banish.mysql.orm.column.LongColumnMeta;
 import org.banish.mysql.orm.column.LongTimeColumnMeta;
-import org.banish.mysql.orm.table.LogTableInfo;
+import org.banish.mysql.orm.table.SplitTableInfo;
 
 /**
  * @author YY
@@ -41,7 +41,7 @@ public class SplitEntityMeta<T> extends EntityMeta<T> {
 	private final SplitWay splitWay;
 	
 	public SplitEntityMeta(Class<T> clazz) {
-		super(clazz, new LogTableInfo(clazz.getAnnotation(SplitTable.class)));
+		super(clazz, new SplitTableInfo(clazz.getAnnotation(SplitTable.class)));
 		
 		//分表的元数据信息
 		SplitTable splitTable = clazz.getAnnotation(SplitTable.class);

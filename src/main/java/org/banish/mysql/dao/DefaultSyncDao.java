@@ -3,8 +3,8 @@
  */
 package org.banish.mysql.dao;
 
+import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.database.IDataSource;
-import org.banish.mysql.orm.AbstractEntity;
 import org.banish.mysql.orm.EntityMeta;
 
 /**

@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.Id.Strategy;
 import org.banish.mysql.annotation.enuma.IndexType;
 import org.banish.mysql.annotation.enuma.IndexWay;
 import org.banish.mysql.dao.OriginDao;
-import org.banish.mysql.orm.AbstractEntity;
 import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.IndexMeta;
 import org.banish.mysql.orm.column.ColumnMeta;

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.mysql.orm;
+package org.banish.mysql;
 
 import java.time.LocalDateTime;
 

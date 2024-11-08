@@ -5,7 +5,7 @@ package org.banish.mysql.orm;
 
 import org.banish.mysql.annotation.Table;
 import org.banish.mysql.annotation.enuma.AsyncType;
-import org.banish.mysql.orm.table.TableInfo;
+import org.banish.mysql.orm.table.DefaultTableInfo;
 
 /**
  * @author YY
@@ -20,7 +20,7 @@ public class DefaultAsyncEntityMeta<T> extends DefaultEntityMeta<T> implements I
 	
 	public DefaultAsyncEntityMeta(Class<T> clazz) {
 		super(clazz);
-		TableInfo table = new TableInfo(clazz.getAnnotation(Table.class));
+		DefaultTableInfo table = new DefaultTableInfo(clazz.getAnnotation(Table.class));
 		this.asyncType = table.asyncType();
 		this.asyncSize = table.asyncSize();
 		this.asyncDelay = table.asyncDelay();

@@ -22,7 +22,6 @@ import org.banish.mysql.dao.OriginDao;
 import org.banish.mysql.dao.SplitAsyncDao;
 import org.banish.mysql.dao.SplitSyncDao;
 import org.banish.mysql.database.IDataSource;
-import org.banish.mysql.orm.AbstractEntity;
 import org.banish.mysql.orm.DefaultAsyncEntityMeta;
 import org.banish.mysql.orm.DefaultEntityMeta;
 import org.banish.mysql.orm.EntityMeta;
