@@ -164,8 +164,7 @@ public class DDL {
 	private final static String SET_AUTO_INCREMENT = "ALTER TABLE `%s` AUTO_INCREMENT=%s;";
 
 	public static String setAutoIncrement(String tableName, long autoinc) {
-		String sql = String.format(SET_AUTO_INCREMENT, tableName, autoinc);
-		return sql;
+		return String.format(SET_AUTO_INCREMENT, tableName, autoinc);
 	}
 	
 	/**
