@@ -6,8 +6,8 @@ package org.banish.mysql.example;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import org.banish.mysql.Daos;
-import org.banish.mysql.Daos.DaosBooter;
+import org.banish.mysql.DaosBooter;
+import org.banish.mysql.DaosBooter.Daos;
 import org.banish.mysql.example.ExampleEntity.BankCard;
 import org.banish.mysql.example.ExampleEntity.Country;
 import org.banish.mysql.example.ExampleEntity.EducationInfo;
