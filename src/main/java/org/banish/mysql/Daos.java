@@ -92,7 +92,7 @@ public class Daos {
 		}
 		OriginDao<?> baseDao = daos.get(clazz);
 		if(baseDao == null) {
-			panic("Can not find entity class %s's runtime dao", clazz.getSimpleName());
+			panic("Can not find entity class [%s]'s runtime dao", clazz.getSimpleName());
 		}
 		return (OriginDao<T>) baseDao;
 	}
@@ -129,14 +129,14 @@ public class Daos {
         return map;
     }
 	
-	public static class DaosBuilder {
+	public static class DaosBooter {
 		private final int tableBaseZone;
 		private List<IDataSource> dataSources = new ArrayList<>();
 		private List<Class<? extends AbstractEntity>> entityClasses = new ArrayList<>();
 		private int asyncPoolSize = 4;
 		private List<ValueFormatter> valueFormaters = new ArrayList<>();
 		
-		public DaosBuilder(int tableBaseZone) {
+		public DaosBooter(int tableBaseZone) {
 			this.tableBaseZone = tableBaseZone;
 		}
 		
@@ -181,7 +181,7 @@ public class Daos {
 				
 				for(EntityMeta<?> entityMeta : entry.getValue()) {
 					if(dbList == null) {
-						panic("Entity class %s can not find datasource using alias named %s", entityMeta.getClazz().getSimpleName(), entityMeta.getDbAlias());
+						panic("Entity class [%s] can not find datasource using alias named %s", entityMeta.getClazz().getSimpleName(), entityMeta.getDbAlias());
 					}
 					for(IDataSource dataSource : dbList) {
 						//通过实体类对应的数据库与元数据信息，动态地创建出该实体类对应的Dao对象
@@ -210,7 +210,7 @@ public class Daos {
 							runtimeDaos.put(zoneId, zoneDaos);
 						}
 						zoneDaos.put(entityMeta.getClazz(), runtimeDao);
-						logger.info("Table {}'s dao is initialized, with type {}, at zone {} using alias named {}",
+						logger.info("Table [{}]'s dao is initialized, with type {}, at zone {} using alias named {}",
 								runtimeDao.getEntityMeta().getTableName(), runtimeDao.getClass().getSimpleName(),
 								zoneId, dataSource.getAlias());
 					}

@@ -84,4 +84,22 @@ public interface ISql<T> {
 	static String buildDeleteSql(EntityMeta<?> entityMeta, String tableName) {
 		return String.format("DELETE FROM `%s` WHERE `%s`=?", tableName, entityMeta.getPrimaryKeyMeta().getColumnName());
 	}
+	
+	/**
+	 * 查询整个表数据的SQL
+	 * @param entityMeta
+	 * @return
+	 */
+	static String buildSelectAll(String tableName) {
+		return String.format("SELECT * FROM `%s`", tableName);
+	}
+	
+	/**
+	 * 查询表中的数据条数
+	 * @param entityMeta
+	 * @return
+	 */
+	static String buildCountAll(String tableName) {
+		return String.format("SELECT count(1) AS number FROM `%s`", tableName);
+	}
 }

@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.banish.mysql.AbstractEntity;
@@ -348,9 +349,64 @@ public abstract class OriginDao<T extends AbstractEntity> {
 	 * @param params
 	 * @return
 	 */
-	public abstract long count(String where, Object... params);
+	public abstract long countWhere(String where, Object... params);
 	
 	public IDataSource getDataSource() {
 		return dataSource;
+	}
+	
+	public <U> U queryAliasObject(Class<U> clazz, String sql, Object... params) {
+		return Dao.queryAliasObject(dataSource, clazz, sql, params);
+	}
+	
+	public <U> List<U> queryAliasObjects(Class<U> clazz, String sql, Object... params) {
+		return Dao.queryAliasObjects(dataSource, clazz, sql, params);
+	}
+	
+	protected final List<T> queryList(String sql, Object... params) {
+		Connection connection = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		try {
+			connection = this.getDataSource().getConnection();
+			statement = connection.prepareStatement(sql);
+			for(int i = 0; i < params.length; i++) {
+				statement.setObject(i + 1, params[i]);
+			}
+			rs = statement.executeQuery();
+			
+			List<T> ts = new ArrayList<>();
+			while(rs.next()) {
+				ts.add(Dao.formObject(getEntityMeta(), rs, false));
+			}
+			return ts;
+		} catch (Exception e) {
+			logger.error("{}.queryListWhere error with sql {}", this.getEntityMeta().getClazz().getSimpleName(), sql);
+			throw new RuntimeException(e);
+		} finally {
+			Dao.close(rs, statement, connection);
+		}
+	}
+	
+	protected final long count(String sql, Object... params) {
+		Connection connection = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		
+		try {
+			connection = this.getDataSource().getConnection();
+			statement = connection.prepareStatement(sql);
+			for(int i = 0; i < params.length; i++) {
+				statement.setObject(i + 1, params[i]);
+			}
+			rs = statement.executeQuery();
+			rs.next();
+			return rs.getLong(1);
+		}  catch (Exception e) {
+			logger.error("{}.count error with sql {}", this.getEntityMeta().getTableName(), sql);
+			throw new RuntimeException(e);
+		} finally {
+			Dao.close(rs, statement, connection);
+		}
 	}
 }

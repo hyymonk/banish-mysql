@@ -207,51 +207,14 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 	 * @return
 	 */
 	public List<T> queryListWhere(String where, Object... params) {
-		Connection connection = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
 		String sql = this.sql.SELECT_ALL + " " + where;
-		try {
-			connection = this.getDataSource().getConnection();
-			statement = connection.prepareStatement(sql);
-			for(int i = 0; i < params.length; i++) {
-				statement.setObject(i + 1, params[i]);
-			}
-			rs = statement.executeQuery();
-			
-			List<T> ts = new ArrayList<>();
-			while(rs.next()) {
-				ts.add(Dao.formObject(getEntityMeta(), rs, false));
-			}
-			return ts;
-		} catch (Exception e) {
-			logger.error("{}.queryListWhere error with sql {}", this.getEntityMeta().getTableName(), sql);
-			throw new RuntimeException(e);
-		} finally {
-			Dao.close(rs, statement, connection);
-		}
+		return this.queryList(sql, params);
 	}
 	
-	public long count(String where, Object... params) {
-		Connection connection = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
+	@Override
+	public long countWhere(String where, Object... params) {
 		String sql = this.sql.COUNT_ALL + " " + where;
-		try {
-			connection = this.getDataSource().getConnection();
-			statement = connection.prepareStatement(sql);
-			for(int i = 0; i < params.length; i++) {
-				statement.setObject(i + 1, params[i]);
-			}
-			rs = statement.executeQuery();
-			rs.next();
-			return rs.getLong(1);
-		}  catch (Exception e) {
-			logger.error("{}.count error with sql {}", this.getEntityMeta().getTableName(), sql);
-			throw new RuntimeException(e);
-		} finally {
-			Dao.close(rs, statement, connection);
-		}
+		return this.count(sql, params);
 	}
 
 	@Override

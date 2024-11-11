@@ -44,12 +44,9 @@ public class TableBuilder {
 		if(SERVER_IDENTITY <= 0) {
 			throw new RuntimeException("数据库构建工具还没有指定服务器标识");
 		}
-		//数据库的名字
-		String dbName = dao.getDataSource().getDbName();
-		
 		List<String> ddlSqls = new ArrayList<>();
 		
-		if (!DDL.isTableExist(dao.getDataSource(), dbName, tableName)) {
+		if (!DDL.isTableExist(dao.getDataSource(), tableName)) {
 			// 创建数据表
 			String ddlSql = createTable(dao, tableName);
 			ddlSqls.add(ddlSql);

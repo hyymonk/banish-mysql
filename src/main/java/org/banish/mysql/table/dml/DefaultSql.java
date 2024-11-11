@@ -27,12 +27,12 @@ public class DefaultSql<T extends AbstractEntity> implements ISql<T> {
 		TABLE_NAME = entityMeta.getTableName();
 		
 		SELECT = select(entityMeta);
-		SELECT_ALL = selectAll(entityMeta);
+		SELECT_ALL = ISql.buildSelectAll(TABLE_NAME);
 		INSERT = ISql.buildInsertSql(entityMeta, TABLE_NAME);
 		UPDATE = ISql.buildUpdateSql(entityMeta, TABLE_NAME);
 		DELETE = ISql.buildDeleteSql(entityMeta, TABLE_NAME);
 		DELETE_ALL = deleteAll(entityMeta);
-		COUNT_ALL = countAll(entityMeta);
+		COUNT_ALL = ISql.buildCountAll(TABLE_NAME);
 		
 //		System.out.println(SELECT);
 //		System.out.println(SELECT_ALL);
@@ -51,14 +51,6 @@ public class DefaultSql<T extends AbstractEntity> implements ISql<T> {
 		return String.format("SELECT * FROM `%s` WHERE `%s`=?", TABLE_NAME, entityMeta.getPrimaryKeyMeta().getColumnName());
 	}
 	/**
-	 * 查询整个表数据的SQL
-	 * @param entityMeta
-	 * @return
-	 */
-	private String selectAll(EntityMeta<T> entityMeta) {
-		return String.format("SELECT * FROM `%s`", TABLE_NAME);
-	}
-	/**
 	 * 删除某个表所有数据的SQL
 	 * @param entityMeta
 	 * @return
@@ -66,14 +58,7 @@ public class DefaultSql<T extends AbstractEntity> implements ISql<T> {
 	private String deleteAll(EntityMeta<T> entityMeta) {
 		return String.format("DELETE FROM `%s`", TABLE_NAME);
 	}
-	/**
-	 * 查询表中的数据条数
-	 * @param entityMeta
-	 * @return
-	 */
-	private String countAll(EntityMeta<T> entityMeta) {
-		return String.format("SELECT count(1) AS number FROM `%s`", TABLE_NAME);
-	}
+	
 	
 	@Override
 	public String insert() {
@@ -96,7 +81,7 @@ public class DefaultSql<T extends AbstractEntity> implements ISql<T> {
 			if(!isFirst) {
 				sql.append(",");
 			}
-			sql.append(String.format("`%s`=?", column.getColumnName()));
+			sql.append(String.format("`%s`", column.getColumnName()));
 			isFirst = false;
 		}
 		sql.append(") VALUES ");

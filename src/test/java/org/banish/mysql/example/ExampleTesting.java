@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 import org.banish.mysql.Daos;
-import org.banish.mysql.Daos.DaosBuilder;
+import org.banish.mysql.Daos.DaosBooter;
 import org.banish.mysql.example.ExampleEntity.BankCard;
 import org.banish.mysql.example.ExampleEntity.Country;
 import org.banish.mysql.example.ExampleEntity.EducationInfo;
@@ -66,7 +66,7 @@ public class ExampleTesting {
 		
 		DataSource dataSource = new DataSource(dbConfig);
 		
-		DaosBuilder daosBuilder = new DaosBuilder(1);
+		DaosBooter daosBuilder = new DaosBooter(1);
 		daosBuilder.addDataSource(dataSource);
 		daosBuilder.addEntityClass(ExampleEntity.class);
 		daosBuilder.addValueFormater(new JsonFormatter());

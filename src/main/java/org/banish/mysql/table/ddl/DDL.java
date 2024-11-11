@@ -22,8 +22,8 @@ public class DDL {
 	 */
 	private final static String SELECT_TABLE_NAME = "SELECT `TABLE_NAME` FROM `INFORMATION_SCHEMA`.`TABLES` WHERE `TABLE_SCHEMA`=? AND `TABLE_NAME`=?;";
 	
-	public static boolean isTableExist(IDataSource dataSource, String dbName, String tableName) {
-		TableExist tableExist = Dao.queryAliasObject(dataSource, TableExist.class, SELECT_TABLE_NAME, dbName, tableName);
+	public static boolean isTableExist(IDataSource dataSource, String tableName) {
+		TableExist tableExist = Dao.queryAliasObject(dataSource, TableExist.class, SELECT_TABLE_NAME, dataSource.getDbName(), tableName);
 		return tableExist != null;
 	} 
 	

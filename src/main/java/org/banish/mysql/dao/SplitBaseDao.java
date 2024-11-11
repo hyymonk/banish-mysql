@@ -16,6 +16,7 @@ import org.banish.mysql.annotation.enuma.SplitWay;
 import org.banish.mysql.database.IDataSource;
 import org.banish.mysql.orm.SplitEntityMeta;
 import org.banish.mysql.table.TableBuilder;
+import org.banish.mysql.table.ddl.DDL;
 import org.banish.mysql.table.dml.ISql;
 import org.banish.mysql.table.dml.SplitSql;
 
@@ -168,8 +169,50 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 		throw new UnsupportedOperationException("不该被调用的函数");
 	}
 
+	
+	public List<T> queryListWhere(Object splitValue, String where, Object... params) {
+		String tableName = this.logEntityMeta.getSplitTableName(splitValue);
+		SplitSql<T> isql = splitSqlMap.get(tableName);
+		if(isql == null) {
+			if(DDL.isTableExist(getDataSource(), tableName)) {
+				synchronized (this) {
+					isql = splitSqlMap.get(tableName);
+					if(isql == null) {
+						isql = createSql(tableName);
+						splitSqlMap.put(tableName, isql);
+					}
+				}
+			} else {
+				return new ArrayList<>();
+			}
+		}
+		String sql = isql.SELECT_ALL + " " + where;
+		return this.queryList(sql, params);
+	}
+	
+	public long countWhere(Object splitValue, String where, Object... params) {
+		String tableName = this.logEntityMeta.getSplitTableName(splitValue);
+		SplitSql<T> isql = splitSqlMap.get(tableName);
+		if(isql == null) {
+			if(DDL.isTableExist(getDataSource(), tableName)) {
+				synchronized (this) {
+					isql = splitSqlMap.get(tableName);
+					if(isql == null) {
+						isql = createSql(tableName);
+						splitSqlMap.put(tableName, isql);
+					}
+				}
+			} else {
+				return 0;
+			}
+		}
+		String sql = isql.COUNT_ALL + " " + where;
+		return this.count(sql, params);
+	}
+
 	@Override
-	public long count(String where, Object... params) {
-		throw new UnsupportedOperationException("不该被调用的函数");
+	public long countWhere(String where, Object... params) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }
