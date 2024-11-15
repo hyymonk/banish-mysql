@@ -5,6 +5,8 @@ package org.banish.mysql;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +94,10 @@ public class DaosBooter {
 			String dbAlias = entry.getKey();
 			List<IDataSource> dbList = dbsByAlias.get(dbAlias);
 			
-			for(EntityMeta<?> entityMeta : entry.getValue()) {
+			List<EntityMeta<?>> sortedList = entry.getValue();
+			Collections.sort(sortedList, META_SORTER);
+			
+			for(EntityMeta<?> entityMeta : sortedList) {
 				if(dbList == null) {
 					panic("Entity class [%s] can not find datasource using alias named %s", entityMeta.getClazz().getSimpleName(), entityMeta.getDbAlias());
 				}
@@ -123,9 +128,10 @@ public class DaosBooter {
 						runtimeDaos.put(zoneId, zoneDaos);
 					}
 					zoneDaos.put(entityMeta.getClazz(), runtimeDao);
-					logger.info("Table [{}]'s dao is initialized, with type {}, at zone {} using alias named {}",
-							runtimeDao.getEntityMeta().getTableName(), runtimeDao.getClass().getSimpleName(),
-							zoneId, dataSource.getAlias());
+					logger.info(String.format(
+							"Table [%-25.25s]'s dao is initialized, with type [%-20s], at zone [%4s] using alias named [%-5.5s]",
+							runtimeDao.getEntityMeta().getTableName(), runtimeDao.getClass().getSimpleName(), zoneId,
+							dataSource.getAlias()));
 				}
 			}
 		}
@@ -260,4 +266,11 @@ public class DaosBooter {
 	public static void panic(String format, Object... args) {
 		throw new RuntimeException(String.format(format, args));
 	}
+	
+	private static Comparator<EntityMeta<?>> META_SORTER = new Comparator<EntityMeta<?>>() {
+		@Override
+		public int compare(EntityMeta<?> o1, EntityMeta<?> o2) {
+			return o1.getTableName().compareTo(o2.getTableName());
+		}
+	};
 }
