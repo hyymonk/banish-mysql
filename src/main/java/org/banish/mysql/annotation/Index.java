@@ -28,11 +28,11 @@ public @interface Index {
 	 */
 	public abstract String name();
 	/**
-	 * 索引引用的列名
+	 * 索引使用到的类字段名（不是数据库的列名）
 	 * 
 	 * @return
 	 */
-	public abstract String[] columns();
+	public abstract String[] fields();
 	/**
 	 * 索引的类型
 	 * 

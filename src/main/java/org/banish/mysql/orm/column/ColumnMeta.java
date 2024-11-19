@@ -125,7 +125,8 @@ public abstract class ColumnMeta {
 	 * @param columnMap
 	 * @return
 	 */
-    public static PrimaryKeyColumnMeta buildAndReturnKey(List<Field> allFields, List<ColumnMeta> columnList, Map<String, ColumnMeta> columnMap) {
+	public static PrimaryKeyColumnMeta buildAndReturnKey(List<Field> allFields, List<ColumnMeta> columnList,
+			Map<String, ColumnMeta> columnMap, Map<String, String> fieldMap) {
         //列信息
     	PrimaryKeyColumnMeta idMeta = null;
         for (Field field : allFields) {
@@ -148,6 +149,7 @@ public abstract class ColumnMeta {
             //构建数据库字段与对象属性关系
             columnList.add(columnMeta);
             columnMap.put(columnMeta.getColumnName(), columnMeta);
+            fieldMap.put(columnMeta.getFieldName(), columnMeta.getColumnName());
         }
         return idMeta;
     }

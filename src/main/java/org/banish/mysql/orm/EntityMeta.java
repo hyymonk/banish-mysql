@@ -88,22 +88,18 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 		List<Field> allFields = ReflectUtil.getAllFields(clazz);
 		//构建列元数据
 		List<ColumnMeta> columnList = new ArrayList<>(allFields.size());
-		Map<String, ColumnMeta> columnMap = new HashMap<>(allFields.size());
+		Map<String, ColumnMeta> columnNameMap = new HashMap<>(allFields.size());
+		Map<String, String> fieldToColumnMap = new HashMap<>(allFields.size());
 		
-		this.primaryKeyMeta = ColumnMeta.buildAndReturnKey(allFields, columnList, columnMap);
+		this.primaryKeyMeta = ColumnMeta.buildAndReturnKey(allFields, columnList, columnNameMap, fieldToColumnMap);
 		if(this.primaryKeyMeta == null) {
 			throw new RuntimeException(clazz.getSimpleName() + " @Id field not found");
 		}
 		this.columnList = Collections.unmodifiableList(columnList);
-		this.columnMap = Collections.unmodifiableMap(columnMap);
-		
+		this.columnMap = Collections.unmodifiableMap(columnNameMap);
+		this.fieldToColumn = Collections.unmodifiableMap(fieldToColumnMap);
 		//构建索引元数据
-		this.indexMap = Collections.unmodifiableMap(IndexMeta.build(table, columnList));
-		
-		this.fieldToColumn = new HashMap<>();
-		for(ColumnMeta meta : columnList) {
-			fieldToColumn.put(meta.getField().getName(), meta.getColumnName());
-		}
+		this.indexMap = Collections.unmodifiableMap(IndexMeta.build(table, this.fieldToColumn));
 	}
 
 	public Class<T> getClazz() {

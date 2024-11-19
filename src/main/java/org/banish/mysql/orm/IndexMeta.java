@@ -11,7 +11,6 @@ import java.util.Map;
 import org.banish.mysql.annotation.Index;
 import org.banish.mysql.annotation.enuma.IndexType;
 import org.banish.mysql.annotation.enuma.IndexWay;
-import org.banish.mysql.orm.column.ColumnMeta;
 import org.banish.mysql.orm.table.ITable;
 
 /**
@@ -60,7 +59,7 @@ public class IndexMeta {
 		return columnBuff.toString();
 	}
 	
-	public static Map<String, IndexMeta> build(ITable table, List<ColumnMeta> metaList) {
+	public static Map<String, IndexMeta> build(ITable table, Map<String, String> fieldToColumn) {
 		Map<String, IndexMeta> indexMap = new HashMap<>();
 		Index[] indexes = table.indexs();
 		//表注解上定义的索引
@@ -70,8 +69,12 @@ public class IndexMeta {
 			}
 			IndexMeta tableIndex = new IndexMeta();
 			tableIndex.setName(index.name());
-			for(String column : index.columns()) {
-				tableIndex.getColumns().add(column);
+			for(String fieldName : index.fields()) {
+				String columnName = fieldToColumn.get(fieldName);
+				if(columnName == null) {
+					throw new RuntimeException("实体类[" + table.name() + "]中未找到字段名[" + fieldName + "]映射的列名");
+				}
+				tableIndex.getColumns().add(columnName);
 			}
 			tableIndex.setType(index.type());
 			tableIndex.setWay(index.way());
