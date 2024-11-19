@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.banish.mysql.annotation.Index;
+import org.banish.mysql.annotation.SuperIndex;
 import org.banish.mysql.annotation.enuma.IndexType;
 import org.banish.mysql.annotation.enuma.IndexWay;
 import org.banish.mysql.orm.table.ITable;
@@ -59,16 +60,42 @@ public class IndexMeta {
 		return columnBuff.toString();
 	}
 	
-	public static Map<String, IndexMeta> build(ITable table, Map<String, String> fieldToColumn) {
-		Map<String, IndexMeta> indexMap = new HashMap<>();
-		Index[] indexes = table.indexs();
-		//表注解上定义的索引
-		for(Index index : indexes) {
-			if(indexMap.containsKey(index.name())) {
-				throw new RuntimeException("实体类[" + table.name() + "]中名字为[" + index.name() + "]的索引被重复定义");
+	public static Map<String, IndexMeta> build(Class<?> clazz, ITable table, Map<String, String> fieldToColumn) {
+		
+		List<Index> allIndexes = new ArrayList<>();
+		
+		Class<?> currClazz = clazz;
+		while(currClazz != null) {
+			SuperIndex superIndex = currClazz.getAnnotation(SuperIndex.class);
+			if(superIndex != null) {
+				for(Index index : superIndex.indexs()) {
+					allIndexes.add(index);
+				}
 			}
+			currClazz = currClazz.getSuperclass();
+		}
+		for(Index index : table.indexs()) {
+			allIndexes.add(index);
+		}
+		
+		Map<String, IndexMeta> indexMap = new HashMap<>();
+		Map<String, String> fieldsMap = new HashMap<>();
+		//表注解上定义的索引
+		for(Index index : allIndexes) {
+			String indexName = "idx";
+			for(String fieldName : index.fields()) {
+				indexName += "_" + IEntityMeta.makeSnakeCase(fieldName);
+			}
+			if(indexMap.containsKey(indexName)) {
+				throw new RuntimeException("实体类[" + table.name() + "]中名字为[" + indexName + "]的索引被重复定义");
+			}
+			String useFields = String.join("_", index.fields());
+			if(fieldsMap.containsKey(useFields)) {
+				throw new RuntimeException("实体类[" + table.name() + "]中名字为[" + indexName + "]的索引被重复定义");
+			}
+			
 			IndexMeta tableIndex = new IndexMeta();
-			tableIndex.setName(index.name());
+			tableIndex.setName(indexName);
 			for(String fieldName : index.fields()) {
 				String columnName = fieldToColumn.get(fieldName);
 				if(columnName == null) {
@@ -79,6 +106,7 @@ public class IndexMeta {
 			tableIndex.setType(index.type());
 			tableIndex.setWay(index.way());
 			indexMap.put(tableIndex.getName(), tableIndex);
+			fieldsMap.put(useFields, indexName);
 		}
 		return indexMap;
 	}

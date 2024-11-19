@@ -26,7 +26,7 @@ public @interface Index {
 	 * 
 	 * @return
 	 */
-	public abstract String name();
+//	public abstract String name();
 	/**
 	 * 索引使用到的类字段名（不是数据库的列名）
 	 * 

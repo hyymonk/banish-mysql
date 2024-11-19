@@ -21,8 +21,8 @@ import org.banish.mysql.annotation.enuma.IndexType;
  * @author YY
  */
 @Table(comment = "例子表", dbAlias = "data", indexs = {
-		@Index(name = "idx_province_code_city_code", fields = { "provinceCode", "cityCode" }),
-		@Index(name = "idx_card_id", fields = { "cardId" }, type = IndexType.UNIQUE) })
+		@Index(fields = { "provinceCode", "cityCode" }),
+		@Index(fields = { "cardId" }, type = IndexType.UNIQUE) })
 public class ExampleEntity extends AbstractEntity {
 	@Id(strategy = Strategy.AUTO)
 	@Column(comment = "唯一ID")
