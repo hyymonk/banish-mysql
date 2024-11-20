@@ -19,7 +19,6 @@ public class AsyncDaoFastPlugin<T> extends AsyncDaoPlugin<T> {
 	@Override
 	protected void update(List<T> updateList) {
 		try {
-			System.out.println("AsyncDaoFastPlugin.insertUpdate");
 			asyncDao.fastUpdateAllNow(updateList);
 			logger.debug(String.format("updateAll right now %s %s data to db", asyncDao.getAsyncName(), updateList.size()));
 		} catch (Exception e1) {
