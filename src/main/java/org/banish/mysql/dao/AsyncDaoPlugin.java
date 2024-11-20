@@ -34,13 +34,13 @@ public class AsyncDaoPlugin<T> {
 	 */
 	private Queue<T> insertQueue = new ConcurrentLinkedQueue<>();
 	
-	private IAsyncDao<T> asyncDao;
+	protected IAsyncDao<T> asyncDao;
 	
 	public AsyncDaoPlugin(IAsyncDao<T> asyncDao) {
 		this.asyncDao = asyncDao;
 	}
 	
-	public void insert(T t) {
+	public final void insert(T t) {
 		if(asyncDao.getAsyncType() == AsyncType.INSERT) {
 			insertQueue.add(t);
 		} else {
@@ -48,7 +48,7 @@ public class AsyncDaoPlugin<T> {
 		}
 	}
 
-	public void insertAll(List<T> ts) {
+	public final void insertAll(List<T> ts) {
 		if(asyncDao.getAsyncType() == AsyncType.INSERT) {
 			insertQueue.addAll(ts);
 		} else {
@@ -56,7 +56,7 @@ public class AsyncDaoPlugin<T> {
 		}
 	}
 
-	public void update(T t) {
+	public final void update(T t) {
 		//数据库更新如果不是进行分布式部署，可以使用hashCode进行判断是否有重复对象在队列中
 		//数据库更新如果采用分布式部署，hashCode的判断将失效
 		if(!updateMap.containsKey(t.hashCode())) {
@@ -65,7 +65,7 @@ public class AsyncDaoPlugin<T> {
 		}
 	}
 
-	public void updateAll(List<T> ts) {
+	public final void updateAll(List<T> ts) {
 		for(T t : ts) {
 			update(t);
 		}
@@ -73,7 +73,7 @@ public class AsyncDaoPlugin<T> {
 	/**
 	 * 在异步中调用的insert函数
 	 */
-	protected void insert() {
+	protected final void insert() {
 		T t = insertQueue.poll();
 		if(t == null) {
 			return;
@@ -93,7 +93,7 @@ public class AsyncDaoPlugin<T> {
 	/**
 	 * 立马插入队列中的所有数据
 	 */
-	protected int insertAllNow() {
+	protected final int insertAllNow() {
 		T t = insertQueue.poll();
 		if(t == null) {
 			return 0;
@@ -115,7 +115,7 @@ public class AsyncDaoPlugin<T> {
 		return count;
 	}
 	
-	private void insert(List<T> insertList) {
+	protected void insert(List<T> insertList) {
 		try {
 			asyncDao.insertAllNow(insertList);
 			logger.debug(String.format("insertAll right now %s %s data to db", asyncDao.getAsyncName(), insertList.size()));
@@ -142,7 +142,7 @@ public class AsyncDaoPlugin<T> {
 	 * 								3、list.add(t)先于特征码的移除，即对象已经被放入更新列表
 	 * 通过上面分析，即使这种情况发生，也不会导致数据没有更新
 	 */
-	protected void update() {
+	protected final void update() {
 		T t = updateQueue.poll();
 		if(t == null) {
 			return;
@@ -166,7 +166,7 @@ public class AsyncDaoPlugin<T> {
 	/**
 	 * 立马更新队列中的所有数据
 	 */
-	protected int updateAllNow() {
+	protected final int updateAllNow() {
 		T t = updateQueue.poll();
 		if(t == null) {
 			return 0;
@@ -189,7 +189,7 @@ public class AsyncDaoPlugin<T> {
 		return count;
 	}
 	
-	private void update(List<T> updateList) {
+	protected void update(List<T> updateList) {
 		try {
 			asyncDao.updateAllNow(updateList);
 			logger.debug(String.format("updateAll right now %s %s data to db", asyncDao.getAsyncName(), updateList.size()));
@@ -207,7 +207,7 @@ public class AsyncDaoPlugin<T> {
 	}
 	
 	
-	public int delayTime() {
+	public final int delayTime() {
 		return asyncDao.getAsyncDelay();
 	}
 }

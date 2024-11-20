@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 
 import org.banish.mysql.annotation.enuma.AsyncType;
 import org.banish.mysql.annotation.enuma.Charset;
+import org.banish.mysql.annotation.enuma.UpdateType;
 
 
 /**
@@ -66,4 +67,9 @@ public @interface Table {
 	 * @return
 	 */
 	public boolean autoBuild() default true;
+	/**
+	 * 更新方式
+	 * @return
+	 */
+	public UpdateType updateType() default UpdateType.UPDATE;
 }

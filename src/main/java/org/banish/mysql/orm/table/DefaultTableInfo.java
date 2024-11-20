@@ -7,6 +7,7 @@ import org.banish.mysql.annotation.Index;
 import org.banish.mysql.annotation.Table;
 import org.banish.mysql.annotation.enuma.AsyncType;
 import org.banish.mysql.annotation.enuma.Charset;
+import org.banish.mysql.annotation.enuma.UpdateType;
 
 /**
  * @author YY
@@ -23,6 +24,7 @@ public class DefaultTableInfo implements ITable {
 	private final int asyncSize;
 	private final int asyncDelay;
 	private final boolean autoBuild;
+	private final UpdateType updateType;
 	
 	public DefaultTableInfo(Table table) {
 		this.name = table.name();
@@ -34,6 +36,7 @@ public class DefaultTableInfo implements ITable {
 		this.asyncSize = table.asyncSize();
 		this.asyncDelay = table.asyncDelay();
 		this.autoBuild = table.autoBuild();
+		this.updateType = table.updateType();
 	}
 	
 	@Override
@@ -79,5 +82,9 @@ public class DefaultTableInfo implements ITable {
 	@Override
 	public boolean autoBuild() {
 		return autoBuild;
+	}
+	
+	public UpdateType updateType() {
+		return updateType;
 	}
 }

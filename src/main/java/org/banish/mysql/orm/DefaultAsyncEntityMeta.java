@@ -6,6 +6,7 @@ package org.banish.mysql.orm;
 import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.Table;
 import org.banish.mysql.annotation.enuma.AsyncType;
+import org.banish.mysql.annotation.enuma.UpdateType;
 import org.banish.mysql.orm.table.DefaultTableInfo;
 
 /**
@@ -18,6 +19,7 @@ public class DefaultAsyncEntityMeta<T extends AbstractEntity> extends DefaultEnt
 	private final int asyncSize;
 	private final int asyncDelay;
 	private final String asyncName;
+	private final UpdateType updateType;
 	
 	public DefaultAsyncEntityMeta(Class<T> clazz) {
 		super(clazz);
@@ -26,6 +28,7 @@ public class DefaultAsyncEntityMeta<T extends AbstractEntity> extends DefaultEnt
 		this.asyncSize = table.asyncSize();
 		this.asyncDelay = table.asyncDelay();
 		this.asyncName = table.name();
+		this.updateType = table.updateType();
 	}
 	
 	@Override
@@ -46,5 +49,9 @@ public class DefaultAsyncEntityMeta<T extends AbstractEntity> extends DefaultEnt
 	@Override
 	public String getAsyncName() {
 		return asyncName;
+	}
+
+	public UpdateType getUpdateType() {
+		return updateType;
 	}
 }

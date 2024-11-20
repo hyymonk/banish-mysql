@@ -89,4 +89,9 @@ public class SplitAsyncDao<T extends AbstractEntity> extends SplitBaseDao<T> imp
 		}
 		return values;
 	}
+
+	@Override
+	public void fastUpdateAllNow(List<T> ts) {
+		super.updateAll(ts);
+	}
 }

@@ -6,6 +6,7 @@ package org.banish.mysql.dao;
 import java.util.List;
 
 import org.banish.mysql.AbstractEntity;
+import org.banish.mysql.annotation.enuma.UpdateType;
 import org.banish.mysql.database.IDataSource;
 import org.banish.mysql.orm.DefaultAsyncEntityMeta;
 import org.banish.mysql.orm.IAsyncEntityMeta;
@@ -24,7 +25,11 @@ public class DefaultAsyncDao<T extends AbstractEntity> extends DefaultBaseDao<T>
 	public DefaultAsyncDao(IDataSource dataSource, DefaultAsyncEntityMeta<T> entityMeta) {
 		super(dataSource, entityMeta);
 		this.asyncMeta = entityMeta;
-		this.asyncDaoPlugin = new AsyncDaoPlugin<T>(this);
+		if(entityMeta.getUpdateType() == UpdateType.UPDATE) {
+			this.asyncDaoPlugin = new AsyncDaoPlugin<T>(this);
+		} else {
+			this.asyncDaoPlugin = new AsyncDaoFastPlugin<T>(this);
+		}
 	}
 
 	@Override
@@ -88,5 +93,10 @@ public class DefaultAsyncDao<T extends AbstractEntity> extends DefaultBaseDao<T>
 			}
 		}
 		return values;
+	}
+
+	@Override
+	public void fastUpdateAllNow(List<T> ts) {
+		super.insertUpdate(ts);
 	}
 }

@@ -18,6 +18,7 @@ public interface IAsyncDao<T> {
 	void insertAllNow(List<T> ts);
 	void updateNow(T t);
 	void updateAllNow(List<T> ts);
+	void fastUpdateAllNow(List<T> ts);
 	
 	AsyncDaoPlugin<T> getAsyncPlugin();
 	
