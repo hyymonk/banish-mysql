@@ -8,13 +8,11 @@
 	<version>0.0.1</version>
 	<packaging>jar</packaging>
 
-	<name>banish-mysql</name>
-	<url>http://maven.apache.org</url>
-
 	<properties>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+		<project.build.jdk>17</project.build.jdk>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
