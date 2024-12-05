@@ -99,7 +99,7 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 		this.columnMap = Collections.unmodifiableMap(columnNameMap);
 		this.fieldToColumn = Collections.unmodifiableMap(fieldToColumnMap);
 		//构建索引元数据
-		this.indexMap = Collections.unmodifiableMap(IndexMeta.build(clazz, table, this.fieldToColumn));
+		this.indexMap = Collections.unmodifiableMap(IndexMeta.build(clazz, table, this.tableName, this.fieldToColumn));
 	}
 
 	public Class<T> getClazz() {

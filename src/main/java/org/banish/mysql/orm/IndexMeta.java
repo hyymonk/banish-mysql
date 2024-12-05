@@ -60,7 +60,7 @@ public class IndexMeta {
 		return columnBuff.toString();
 	}
 	
-	public static Map<String, IndexMeta> build(Class<?> clazz, ITable table, Map<String, String> fieldToColumn) {
+	public static Map<String, IndexMeta> build(Class<?> clazz, ITable table, String tableName, Map<String, String> fieldToColumn) {
 		
 		List<Index> allIndexes = new ArrayList<>();
 		
@@ -87,11 +87,11 @@ public class IndexMeta {
 				indexName += "_" + IEntityMeta.makeSnakeCase(fieldName);
 			}
 			if(indexMap.containsKey(indexName)) {
-				throw new RuntimeException("实体类[" + table.name() + "]中名字为[" + indexName + "]的索引被重复定义");
+				throw new RuntimeException("实体类[" + tableName + "]中名字为[" + indexName + "]的索引被重复定义");
 			}
 			String useFields = String.join("_", index.fields());
 			if(fieldsMap.containsKey(useFields)) {
-				throw new RuntimeException("实体类[" + table.name() + "]中名字为[" + indexName + "]的索引被重复定义");
+				throw new RuntimeException("实体类[" + tableName + "]中名字为[" + indexName + "]的索引被重复定义");
 			}
 			
 			IndexMeta tableIndex = new IndexMeta();
@@ -99,7 +99,7 @@ public class IndexMeta {
 			for(String fieldName : index.fields()) {
 				String columnName = fieldToColumn.get(fieldName);
 				if(columnName == null) {
-					throw new RuntimeException("实体类[" + table.name() + "]中未找到字段名[" + fieldName + "]映射的列名");
+					throw new RuntimeException("实体类[" + tableName + "]中未找到字段名[" + fieldName + "]映射的列名");
 				}
 				tableIndex.getColumns().add(columnName);
 			}
