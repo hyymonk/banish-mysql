@@ -41,7 +41,7 @@ public class QuerySet {
 	}
 
 	/**
-	 * @param filter 数据库的字段名
+	 * @param filter 数据库的字段名，如果是like的匹配，填写格式如some like ?, "%" + some + "%"
 	 * @param values
 	 */
 	public void addCondition(String filter, Object... values) {

@@ -284,6 +284,38 @@ public abstract class OriginDao<T extends AbstractEntity> {
 		//设置ID参数值
 		statement.setObject(index + 1, getEntityMeta().getPrimaryKeyValue(t));
 	}
+	
+	/**
+	 * 当数据状态是when时更新，多用于根据数据库状态进行更新的情况，如根据数据版本号
+	 * @param t
+	 * @param when 需要给出完整的判断情况，格式如：version = 1 AND status = 0 AND ...
+	 * @return
+	 */
+	public boolean updateWhen(T t, String when) {
+		Connection connection = null;
+		PreparedStatement statement = null;
+		String sql = "";
+		try {
+			connection = this.dataSource.getConnection();
+			sql = this.getSql(t).update();
+			sql += " AND " + when;
+			statement = connection.prepareStatement(sql);
+			
+			t.setUpdateTime(LocalDateTime.now());
+			setUpdateValues(statement, t);
+			int result = statement.executeUpdate();
+			if(result > 0) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Exception e) {
+			logger.error("{}.updateWhen error with sql {}", this.getEntityMeta().getTableName(), sql);
+			throw new RuntimeException(e);
+		} finally {
+			Dao.close(null, statement, connection);
+		}
+	}
 
 	/**
 	 * 根据数据的ID进行删除，不建议进行物理删除
