@@ -94,10 +94,10 @@ public class DaosBooter {
 			String dbAlias = entry.getKey();
 			List<IDataSource> dbList = dbsByAlias.get(dbAlias);
 			
-			List<EntityMeta<?>> sortedList = entry.getValue();
-			Collections.sort(sortedList, META_SORTER);
+			List<EntityMeta<?>> metaList = entry.getValue();
+			Collections.sort(metaList, META_SORTER);
 			
-			for(EntityMeta<?> entityMeta : sortedList) {
+			for(EntityMeta<?> entityMeta : metaList) {
 				if(dbList == null) {
 					panic("Entity class [%s] can not find datasource using alias named %s", entityMeta.getClazz().getSimpleName(), entityMeta.getDbAlias());
 				}
@@ -128,7 +128,7 @@ public class DaosBooter {
 						runtimeDaos.put(zoneId, zoneDaos);
 					}
 					zoneDaos.put(entityMeta.getClazz(), runtimeDao);
-					logger.info(String.format(
+					logger.debug(String.format(
 							"Table [%-25.25s]'s dao is initialized, with type [%-20s], at zone [%4s] using alias named [%-5.5s]",
 							runtimeDao.getEntityMeta().getTableName(), runtimeDao.getClass().getSimpleName(), zoneId,
 							dataSource.getAlias()));
