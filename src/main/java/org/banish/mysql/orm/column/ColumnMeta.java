@@ -58,7 +58,7 @@ public abstract class ColumnMeta {
 		if(column == null) {
 			//非实体表类的结构进行查询
 			this.fieldName = this.field.getName();
-			this.columnName = IEntityMeta.makeSnakeCase(this.field.getName());
+			this.columnName = this.field.getName();
 			this.readonly = false;
 			this.comment = "";
 		} else {
