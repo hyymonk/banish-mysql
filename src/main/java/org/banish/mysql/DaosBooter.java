@@ -8,11 +8,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Function;
+import java.util.Set;
 
+import org.banish.base.IMetaFactory;
 import org.banish.mysql.annotation.SplitTable;
 import org.banish.mysql.annotation.Table;
 import org.banish.mysql.annotation.enuma.AsyncType;
@@ -71,68 +72,48 @@ public class DaosBooter {
 		this.valueFormaters.add(valueFormater);
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setup() {
 		TableBuilder.SERVER_IDENTITY = tableBaseZone;
-		
-		//构建所有实体类的运行期元数据信息
-		List<EntityMeta<?>> metas = buildMetas();
 		
 		//添加值格式化方式
 		ValueFormatters.addFormater(valueFormaters);
 		
+		Map<String, List<Class<? extends AbstractEntity>>> aliasClassMap = groupByAlias();
+		
+		//TODO 检查数据库是否都配置上
+		Set<String> dbAlias = new HashSet<>();
+		for(IDataSource dataSource : dataSources) {
+			dbAlias.add(dataSource.getAlias());
+		}
+		for(String needAlias : aliasClassMap.keySet()) {
+			if(!dbAlias.contains(needAlias)) {
+                panic("Can not find datasource using alias named %s", needAlias);
+			}
+		}
+		
 		//用于保存所有运行期Dao的集合
 		Map<Integer, Map<Class<?>, OriginDao<?>>> runtimeDaos = new HashMap<>();
-		
-		//加载数据库连接信息文件
-		Map<String, List<IDataSource>> dbsByAlias = fillListMap(dataSources, IDataSource::getAlias);
-		
-		//将元数据按照使用的数据库别名来分组
-		Map<String, List<EntityMeta<?>>> metaByAlias = fillListMap(metas, EntityMeta::getDbAlias);
-		
-		for(Entry<String, List<EntityMeta<?>>> entry : metaByAlias.entrySet()) {
-			String dbAlias = entry.getKey();
-			List<IDataSource> dbList = dbsByAlias.get(dbAlias);
-			
-			List<EntityMeta<?>> metaList = entry.getValue();
-			Collections.sort(metaList, META_SORTER);
-			
-			for(EntityMeta<?> entityMeta : metaList) {
-				if(dbList == null) {
-					panic("Entity class [%s] can not find datasource using alias named %s", entityMeta.getClazz().getSimpleName(), entityMeta.getDbAlias());
+		for(IDataSource dataSource : dataSources) {
+			List<Class<? extends AbstractEntity>> clazzList = aliasClassMap.get(dataSource.getAlias());
+			if(clazzList == null) {
+				continue;
+			}
+			Collections.sort(clazzList, CLAZZ_SORTER);
+			for(Class<? extends AbstractEntity> clazz : clazzList) {
+				EntityMeta<?> entityMeta = buildMeta(clazz, dataSource.getMetaFactory());
+				OriginDao<?> runtimeDao = buildRuntimeDao(entityMeta, dataSource);
+				
+				int zoneId = dataSource.getZoneId();
+				Map<Class<?>, OriginDao<?>> zoneDaos = runtimeDaos.get(zoneId);
+				if(zoneDaos == null) {
+					zoneDaos = new HashMap<>();
+					runtimeDaos.put(zoneId, zoneDaos);
 				}
-				for(IDataSource dataSource : dbList) {
-					//通过实体类对应的数据库与元数据信息，动态地创建出该实体类对应的Dao对象
-					OriginDao<?> runtimeDao = null;
-					
-					if(entityMeta instanceof DefaultAsyncEntityMeta) {
-						runtimeDao = new DefaultAsyncDao(dataSource, (DefaultAsyncEntityMeta)entityMeta);
-						
-					} else if(entityMeta instanceof DefaultEntityMeta) {
-						runtimeDao = new DefaultSyncDao(dataSource, (DefaultEntityMeta)entityMeta);
-						
-					} else if(entityMeta instanceof SplitAsyncEntityMeta) {
-						runtimeDao = new SplitAsyncDao(dataSource, (SplitAsyncEntityMeta)entityMeta);
-						
-					} else if(entityMeta instanceof SplitEntityMeta) {
-						runtimeDao = new SplitSyncDao(dataSource, (SplitEntityMeta)entityMeta);
-						
-					} else {
-						panic("This situation will never happen");
-					}
-					
-					int zoneId = dataSource.getZoneId();
-					Map<Class<?>, OriginDao<?>> zoneDaos = runtimeDaos.get(zoneId);
-					if(zoneDaos == null) {
-						zoneDaos = new HashMap<>();
-						runtimeDaos.put(zoneId, zoneDaos);
-					}
-					zoneDaos.put(entityMeta.getClazz(), runtimeDao);
-					logger.debug(String.format(
-							"Table [%-25.25s]'s dao is initialized, with type [%-20s], at zone [%4s] using alias named [%-5.5s]",
-							runtimeDao.getEntityMeta().getTableName(), runtimeDao.getClass().getSimpleName(), zoneId,
-							dataSource.getAlias()));
-				}
+				zoneDaos.put(entityMeta.getClazz(), runtimeDao);
+				logger.debug(String.format(
+						"Table [%-25.25s]'s dao is initialized, with type [%-20s], at zone [%4s] using alias named [%-10.10s]",
+						runtimeDao.getEntityMeta().getTableName(), runtimeDao.getClass().getSimpleName(), zoneId,
+						dataSource.getAlias()));
 			}
 		}
 		DaosBooter.INSTANCE.setupRuntimeDaos(runtimeDaos, asyncPoolSize);
@@ -142,27 +123,9 @@ public class DaosBooter {
 		DaoExecutorService.shutdownDaoExecutor();
 	}
 	
-	private static <T, K> Map<K, List<T>> fillListMap(List<T> tlist, Function<T, K> f) {
-        Map<K, List<T>> map = new HashMap<>();
-        for (T t : tlist) {
-            K keyValue = f.apply(t);
-            List<T> list = map.get(keyValue);
-            if (list == null) {
-                list = new ArrayList<>();
-                map.put(keyValue, list);
-            }
-            list.add(t);
-        }
-        return map;
-    }
-	
-	private List<EntityMeta<? extends AbstractEntity>> buildMetas() {
-		Map<Class<? extends AbstractEntity>, EntityMeta<?>> metas = new HashMap<>();
+	private Map<String, List<Class<? extends AbstractEntity>>> groupByAlias() {
+		Map<String, List<Class<? extends AbstractEntity>>> aliasClassMap = new HashMap<>();
 		for(Class<? extends AbstractEntity> clazz : entityClasses) {
-			if(metas.containsKey(clazz)) {
-				panic("Duplicate entity class %s is added to the dao builder", clazz.getSimpleName());
-			}
-			
 			Table table = clazz.getAnnotation(Table.class);
 			SplitTable splitTable = clazz.getAnnotation(SplitTable.class);
 			if(table != null && splitTable != null) {
@@ -171,26 +134,75 @@ public class DaosBooter {
 			if(table == null && splitTable == null) {
 				panic("Entity class %s does not contains any @?Table annotation", clazz.getSimpleName());
 			}
-			
-			EntityMeta<?> entityMeta = null;
+			String alias = null;
 			if(table != null) {
-				//普通的数据表
-				if(table.asyncType() == AsyncType.NONE) {
-					entityMeta = new DefaultEntityMeta<>(clazz);
-				} else {
-					entityMeta = new DefaultAsyncEntityMeta<>(clazz);
-				}
+				alias = table.dbAlias();
 			} else if(splitTable != null) {
-				//按时间分表的数据表
-				if(splitTable.asyncType() == AsyncType.NONE) {
-					entityMeta = new SplitEntityMeta<>(clazz);
-				} else {
-					entityMeta = new SplitAsyncEntityMeta<>(clazz);
-				}
+				alias = splitTable.dbAlias();
+			} else {
+				panic("will never happen");
 			}
-			metas.put(entityMeta.getClazz(), entityMeta);
+			List<Class<? extends AbstractEntity>> classList = aliasClassMap.get(alias);
+			if(classList == null) {
+				classList = new ArrayList<>();
+				aliasClassMap.put(alias, classList);
+			}
+			classList.add(clazz);
 		}
-		return new ArrayList<>(metas.values());
+		return aliasClassMap;
+	}
+	
+	
+	private EntityMeta<?> buildMeta(Class<? extends AbstractEntity> clazz, IMetaFactory metaFactory) {
+		Table table = clazz.getAnnotation(Table.class);
+		SplitTable splitTable = clazz.getAnnotation(SplitTable.class);
+		if(table != null && splitTable != null) {
+			panic("Entity class %s contains multiple @?Table annotation", clazz.getSimpleName());
+		}
+		if(table == null && splitTable == null) {
+			panic("Entity class %s does not contains any @?Table annotation", clazz.getSimpleName());
+		}
+		
+		EntityMeta<?> entityMeta = null;
+		if(table != null) {
+			//普通的数据表
+			if(table.asyncType() == AsyncType.NONE) {
+				entityMeta = new DefaultEntityMeta<>(clazz, metaFactory);
+			} else {
+				entityMeta = new DefaultAsyncEntityMeta<>(clazz, metaFactory);
+			}
+		} else if(splitTable != null) {
+			//按时间分表的数据表
+			if(splitTable.asyncType() == AsyncType.NONE) {
+				entityMeta = new SplitEntityMeta<>(clazz, metaFactory);
+			} else {
+				entityMeta = new SplitAsyncEntityMeta<>(clazz, metaFactory);
+			}
+		}
+		return entityMeta;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private OriginDao<?> buildRuntimeDao(EntityMeta<?> entityMeta, IDataSource dataSource) {
+		//通过实体类对应的数据库与元数据信息，动态地创建出该实体类对应的Dao对象
+		OriginDao<?> runtimeDao = null;
+		
+		if(entityMeta instanceof DefaultAsyncEntityMeta) {
+			runtimeDao = new DefaultAsyncDao(dataSource, (DefaultAsyncEntityMeta)entityMeta);
+			
+		} else if(entityMeta instanceof DefaultEntityMeta) {
+			runtimeDao = new DefaultSyncDao(dataSource, (DefaultEntityMeta)entityMeta);
+			
+		} else if(entityMeta instanceof SplitAsyncEntityMeta) {
+			runtimeDao = new SplitAsyncDao(dataSource, (SplitAsyncEntityMeta)entityMeta);
+			
+		} else if(entityMeta instanceof SplitEntityMeta) {
+			runtimeDao = new SplitSyncDao(dataSource, (SplitEntityMeta)entityMeta);
+			
+		} else {
+			panic("This situation will never happen");
+		}
+		return runtimeDao;
 	}
 	
 	public static class Daos {
@@ -267,10 +279,10 @@ public class DaosBooter {
 		throw new RuntimeException(String.format(format, args));
 	}
 	
-	private static Comparator<EntityMeta<?>> META_SORTER = new Comparator<EntityMeta<?>>() {
+	private static Comparator<Class<?>> CLAZZ_SORTER = new Comparator<Class<?>>() {
 		@Override
-		public int compare(EntityMeta<?> o1, EntityMeta<?> o2) {
-			return o1.getTableName().compareTo(o2.getTableName());
+		public int compare(Class<?> o1, Class<?> o2) {
+			return o1.getName().compareTo(o2.getName());
 		}
 	};
 }

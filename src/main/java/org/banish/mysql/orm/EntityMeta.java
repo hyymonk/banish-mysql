@@ -11,12 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.banish.base.IMetaFactory;
+import org.banish.base.IPrimaryKeyColumnMeta;
 import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.Column;
 import org.banish.mysql.annotation.Id;
 import org.banish.mysql.annotation.enuma.Charset;
-import org.banish.mysql.orm.column.MColumnMetaFactory;
-import org.banish.mysql.orm.column.MPrimaryKeyColumnMeta;
 import org.banish.mysql.orm.table.ITable;
 import org.banish.mysql.util.ReflectUtil;
 import org.slf4j.Logger;
@@ -57,7 +57,7 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	/**
 	 * 主键元数据
 	 */
-	private final MPrimaryKeyColumnMeta primaryKeyMeta;
+	private final IPrimaryKeyColumnMeta primaryKeyMeta;
 	/**
 	 * 所有字段列表，包含主键，在合服的时候主键会被保留原来的值
 	 */
@@ -75,8 +75,11 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	 */
 	private final Map<String, String> fieldToColumn;
 	
-	protected EntityMeta(Class<T> clazz, ITable table) {
+	private final IMetaFactory metaFactory;
+	
+	protected EntityMeta(Class<T> clazz, ITable table, IMetaFactory metaFactory) {
 		this.clazz = clazz;
+		this.metaFactory = metaFactory;
 		if("".equals(table.name())) {
 			this.tableName = IEntityMeta.makeSnakeCase(clazz.getSimpleName());
 		} else {
@@ -112,10 +115,10 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	 * @param columnMap
 	 * @return
 	 */
-	private MPrimaryKeyColumnMeta buildAndReturnKey(List<Field> allFields, List<ColumnMeta> columnList,
+	private IPrimaryKeyColumnMeta buildAndReturnKey(List<Field> allFields, List<ColumnMeta> columnList,
 			Map<String, ColumnMeta> columnMap, Map<String, String> fieldMap) {
         //列信息
-    	MPrimaryKeyColumnMeta idMeta = null;
+    	IPrimaryKeyColumnMeta idMeta = null;
         for (Field field : allFields) {
             Column column = field.getAnnotation(Column.class);
             if(column == null) {
@@ -125,13 +128,13 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
             ColumnMeta columnMeta = null;
             if(id != null) {
             	if(idMeta == null) {
-    				idMeta = MColumnMetaFactory.INS.newPrimaryKeyColumnMeta(field);
+    				idMeta = metaFactory.newPrimaryKeyColumnMeta(field);
     			} else {
     				throw new RuntimeException(field.getDeclaringClass().getSimpleName() + " @Id field more than one");
     			}
-            	columnMeta = idMeta;
+            	columnMeta = (ColumnMeta)idMeta;
             } else {
-            	columnMeta = MColumnMetaFactory.INS.build(field);
+            	columnMeta = metaFactory.newColumnMeta(field);
             }
             //构建数据库字段与对象属性关系
             columnList.add(columnMeta);
@@ -150,7 +153,7 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 		return tableName;
 	}
 
-	public MPrimaryKeyColumnMeta getPrimaryKeyMeta() {
+	public IPrimaryKeyColumnMeta getPrimaryKeyMeta() {
 		return primaryKeyMeta;
 	}
 

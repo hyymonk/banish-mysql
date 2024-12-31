@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.banish.IDDL;
+import org.banish.base.IPrimaryKeyColumnMeta;
 import org.banish.mysql.annotation.Column;
 import org.banish.mysql.annotation.Id.Strategy;
 import org.banish.mysql.dao.Dao;
@@ -277,7 +278,7 @@ public class PostgreSqlDDL implements IDDL {
 			result.append(getColumnDefine(columnMeta)).append(",");
 		}
 		
-		ColumnMeta primaryKeyMeta = entityMeta.getPrimaryKeyMeta();
+		IPrimaryKeyColumnMeta primaryKeyMeta = entityMeta.getPrimaryKeyMeta();
 		//创建表的时候只进行了主键的定义，索引的设置会在表构建好之后进行处理
 		result.append(String.format("PRIMARY KEY (`%s`)", primaryKeyMeta.getColumnName()));
 		//这里并没有对自增ID进行初始处理，自增ID的设置会在表构建好之后进行处理

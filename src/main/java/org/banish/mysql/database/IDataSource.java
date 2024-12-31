@@ -6,6 +6,8 @@ package org.banish.mysql.database;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.banish.base.IMetaFactory;
+
 /**
  * 
  */
@@ -30,4 +32,6 @@ public interface IDataSource {
 	 * @return
 	 */
 	String getAlias();
+	
+	IMetaFactory getMetaFactory();
 }

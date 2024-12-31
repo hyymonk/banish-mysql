@@ -10,6 +10,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
+import org.banish.base.IMetaFactory;
 import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.SplitTable;
 import org.banish.mysql.annotation.enuma.SplitWay;
@@ -43,8 +44,8 @@ public class SplitEntityMeta<T extends AbstractEntity> extends EntityMeta<T> {
 	
 	private final SplitWay splitWay;
 	
-	public SplitEntityMeta(Class<T> clazz) {
-		super(clazz, new SplitTableInfo(clazz.getAnnotation(SplitTable.class)));
+	public SplitEntityMeta(Class<T> clazz, IMetaFactory metaFactory) {
+		super(clazz, new SplitTableInfo(clazz.getAnnotation(SplitTable.class)), metaFactory);
 		
 		//分表的元数据信息
 		SplitTable splitTable = clazz.getAnnotation(SplitTable.class);

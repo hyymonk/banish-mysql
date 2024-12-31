@@ -8,18 +8,20 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+import org.banish.base.IMetaFactory;
 import org.banish.mysql.orm.ColumnMeta;
 
 /**
  * @author YY
  */
-public class MColumnMetaFactory {
+public class MySqlMetaFactory implements IMetaFactory {
 
-	public static final MColumnMetaFactory INS = new MColumnMetaFactory();
+	public static final MySqlMetaFactory INS = new MySqlMetaFactory();
 	
-	private MColumnMetaFactory() {}
+	private MySqlMetaFactory() {}
 	
-	public ColumnMeta build(Field field) {
+	@Override
+	public ColumnMeta newColumnMeta(Field field) {
         if(field.getType() == byte.class || field.getType() == Byte.class) {
             return new MByteColumnMeta(field);
             
@@ -61,6 +63,7 @@ public class MColumnMetaFactory {
         }
     }
 	
+	@Override
 	public MPrimaryKeyColumnMeta newPrimaryKeyColumnMeta(Field field) {
 		return new MPrimaryKeyColumnMeta(field);
 	}

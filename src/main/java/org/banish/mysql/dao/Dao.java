@@ -11,8 +11,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.banish.mysql.database.IDataSource;
 import org.banish.mysql.orm.AliasEntityMeta;
@@ -28,8 +26,6 @@ import org.slf4j.LoggerFactory;
 public class Dao {
 
 	private static Logger logger = LoggerFactory.getLogger(Dao.class);
-	
-	private static final ConcurrentMap<Class<?>, AliasEntityMeta<?>> ALIAS_METAS = new ConcurrentHashMap<>();
 	
 	protected static void close(ResultSet resultSet, PreparedStatement statement, Connection connection) {
 		try {
@@ -113,13 +109,8 @@ public class Dao {
 			}
 			rs = statement.executeQuery();
 			
-			@SuppressWarnings("unchecked")
-			AliasEntityMeta<U> aliasEntityMeta = (AliasEntityMeta<U>)ALIAS_METAS.get(clazz);
-			if(aliasEntityMeta == null) {
-				aliasEntityMeta = new AliasEntityMeta<>(clazz);
-				ALIAS_METAS.put(clazz, aliasEntityMeta);
-			}
-			
+			//取消对别名实体元数据的缓存，如果要缓存，还需要根据元数据工厂的不同进行分组
+			AliasEntityMeta<U> aliasEntityMeta = new AliasEntityMeta<>(clazz, dataSource.getMetaFactory());
 			List<U> ts = new ArrayList<>();
 			while(rs.next()) {
 				ts.add(Dao.formObject(aliasEntityMeta, rs, true));

@@ -3,6 +3,7 @@
  */
 package org.banish.mysql.orm;
 
+import org.banish.base.IMetaFactory;
 import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.SplitTable;
 import org.banish.mysql.annotation.enuma.AsyncType;
@@ -19,8 +20,8 @@ public class SplitAsyncEntityMeta<T extends AbstractEntity> extends SplitEntityM
 	private final int asyncDelay;
 	private final String asyncName;
 	
-	public SplitAsyncEntityMeta(Class<T> clazz) {
-		super(clazz);
+	public SplitAsyncEntityMeta(Class<T> clazz, IMetaFactory metaFactory) {
+		super(clazz, metaFactory);
 		SplitTableInfo table = new SplitTableInfo(clazz.getAnnotation(SplitTable.class));
 		this.asyncType = table.asyncType();
 		this.asyncSize = table.asyncSize();

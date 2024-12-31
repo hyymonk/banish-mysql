@@ -3,6 +3,7 @@
  */
 package org.banish.mysql.orm;
 
+import org.banish.base.IMetaFactory;
 import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.Table;
 import org.banish.mysql.annotation.enuma.AsyncType;
@@ -21,8 +22,8 @@ public class DefaultAsyncEntityMeta<T extends AbstractEntity> extends DefaultEnt
 	private final String asyncName;
 	private final UpdateType updateType;
 	
-	public DefaultAsyncEntityMeta(Class<T> clazz) {
-		super(clazz);
+	public DefaultAsyncEntityMeta(Class<T> clazz, IMetaFactory metaFactory) {
+		super(clazz, metaFactory);
 		DefaultTableInfo table = new DefaultTableInfo(clazz.getAnnotation(Table.class));
 		this.asyncType = table.asyncType();
 		this.asyncSize = table.asyncSize();

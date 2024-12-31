@@ -7,7 +7,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.banish.DBConfig;
+import org.banish.base.IMetaFactory;
 import org.banish.mysql.database.IDataSource;
+import org.banish.postgresql.orm.column.PostgreSqlMetaFactory;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
@@ -91,5 +93,10 @@ public class PostgreSqlDataSource implements IDataSource {
 	@Override
 	public String getDbName() {
 		return dbConfig.getDbName();
+	}
+
+	@Override
+	public IMetaFactory getMetaFactory() {
+		return PostgreSqlMetaFactory.INS;
 	}
 }

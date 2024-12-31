@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.banish.mysql.orm.column.MColumnMetaFactory;
+import org.banish.base.IMetaFactory;
 import org.banish.mysql.util.ReflectUtil;
 
 /**
@@ -31,23 +31,24 @@ public class AliasEntityMeta<T> implements IEntityMeta<T> {
 	 */
 	private final Map<String, ColumnMeta> columnMap;
 	
-	public AliasEntityMeta(Class<T> clazz) {
+	public AliasEntityMeta(Class<T> clazz, IMetaFactory metaFactory) {
 		this.clazz = clazz;
 		
 		List<ColumnMeta> columnList = new ArrayList<>();
 		Map<String, ColumnMeta> columnMap = new HashMap<>();
 		
 		List<Field> allFields = ReflectUtil.getAllFields(clazz);
-		buildAlias(allFields, columnList, columnMap);
+		buildAlias(allFields, columnList, columnMap, metaFactory);
 		
 		this.columnList = Collections.unmodifiableList(columnList);
 		this.columnMap = Collections.unmodifiableMap(columnMap);
 	}
 	
-	private void buildAlias(List<Field> allFields, List<ColumnMeta> columnList, Map<String, ColumnMeta> columnMap) {
+	private void buildAlias(List<Field> allFields, List<ColumnMeta> columnList, Map<String, ColumnMeta> columnMap,
+			IMetaFactory metaFactory) {
         //列信息
         for (Field field : allFields) {
-            ColumnMeta columnMeta = MColumnMetaFactory.INS.build(field);        
+            ColumnMeta columnMeta = metaFactory.newColumnMeta(field);
             //构建数据库字段与对象属性关系
             columnList.add(columnMeta);
             columnMap.put(columnMeta.getColumnName(), columnMeta);

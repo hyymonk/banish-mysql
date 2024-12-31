@@ -6,6 +6,7 @@ package org.banish.postgresql.orm.column;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 
+import org.banish.base.IPrimaryKeyColumnMeta;
 import org.banish.mysql.annotation.Column;
 import org.banish.mysql.annotation.Id;
 import org.banish.mysql.annotation.Id.Strategy;
@@ -15,7 +16,7 @@ import org.banish.mysql.orm.ColumnMeta;
  * @author YY
  *
  */
-public class PPrimaryKeyColumnMeta extends ColumnMeta {
+public class PPrimaryKeyColumnMeta extends ColumnMeta implements IPrimaryKeyColumnMeta {
 	/**
 	 * ID策略
 	 */
