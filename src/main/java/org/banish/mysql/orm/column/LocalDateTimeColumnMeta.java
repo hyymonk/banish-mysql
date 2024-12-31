@@ -42,9 +42,6 @@ public class LocalDateTimeColumnMeta extends ColumnMeta {
 	
 	@Override
 	public boolean isChange(String dbColumnType, String dbColumnExtra) {
-		if(!dbColumnType.startsWith("datetime")) {
-			return true;
-		}
-		return false;
+		return !dbColumnType.startsWith("datetime");
 	}
 }

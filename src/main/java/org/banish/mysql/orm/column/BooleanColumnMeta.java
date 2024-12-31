@@ -48,10 +48,6 @@ public class BooleanColumnMeta extends ColumnMeta {
 	
 	@Override
 	public boolean isChange(String dbColumnType, String dbColumnExtra) {
-		if(dbColumnType.startsWith("char(5)")) {
-			return false;
-		} else {
-			return true;
-		}
+		return !dbColumnType.startsWith("char(5)");
 	}
 }

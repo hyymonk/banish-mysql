@@ -38,9 +38,6 @@ public class ShortColumnMeta extends ColumnMeta {
 	
 	@Override
 	public boolean isChange(String dbColumnType, String dbColumnExtra) {
-		if(!dbColumnType.startsWith("smallint")) {
-			return true;
-		}
-		return false;
+		return !dbColumnType.startsWith("smallint");
 	}
 }

@@ -38,9 +38,6 @@ public class IntegerColumnMeta extends ColumnMeta {
 	
 	@Override
 	public boolean isChange(String dbColumnType, String dbColumnExtra) {
-		if(!dbColumnType.startsWith("int")) {
-			return true;
-		}
-		return false;
+		return !dbColumnType.startsWith("int");
 	}
 }

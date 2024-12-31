@@ -62,11 +62,7 @@ public class EnumColumnMeta extends ColumnMeta {
 	@Override
 	public boolean isChange(String dbColumnType, String dbColumnExtra) {
 		String typeStr = "varchar(" + length + ")";
-		if(!dbColumnType.contains(typeStr)) {
-			return true;
-		} else {
-			return false;
-		}
+		return !dbColumnType.contains(typeStr);
 	}
 
 }
