@@ -3,23 +3,45 @@
  */
 package org.banish.postgresql.table;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.banish.IDDL;
 import org.banish.mysql.annotation.Column;
 import org.banish.mysql.dao.Dao;
 import org.banish.mysql.database.IDataSource;
+import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.IndexMeta;
+import org.banish.mysql.orm.column.ColumnMeta;
 
 /**
  * @author YY
  */
 public class PostgreSqlDDL implements IDDL {
 	
+	private IDataSource dataSource;
+	private boolean autoBuild;
+	private List<String> ddlSqls = new ArrayList<>();
+	public void addDDL(String ddl, String remark) {
+		DDLSql ddlSql = new DDLSql();
+		ddlSql.sql = ddl;
+		ddlSql.remark = remark;
+		ddlSqls.add(ddl);
+	}
+	public void addDDLs(List<String> ddls, String remark) {
+		for(String ddl : ddls) {
+			addDDL(ddl, remark);
+		}
+	}
+	public List<String> getDDLs() {
+		return ddlSqls;
+	}
+	
+	
 	private final String SELECT_TABLE_NAME = "SELECT \"table_name\" FROM \"information_schema\".\"tables\" WHERE \"table_schema\"=? AND \"table_name\"=?;";
 
 	@Override
-	public boolean isTableExist(IDataSource dataSource, String tableName) {
+	public boolean isTableExist(String tableName) {
 		TableExist tableExist = Dao.queryAliasObject(dataSource, TableExist.class, SELECT_TABLE_NAME, dataSource.getDbName(), tableName);
 		return tableExist != null;
 	}
@@ -52,7 +74,7 @@ public class PostgreSqlDDL implements IDDL {
 			+ "	indrelid = ( SELECT oid FROM pg_class WHERE relname = ? )";
 	
 	@Override
-	public List<? extends IIndexStruct> getKeys(IDataSource dataSource, String tableName) {
+	public List<? extends IIndexStruct> getKeys(String tableName) {
 		String sql = String.format(SHOW_KEYS, tableName);
 		return Dao.queryAliasObjects(dataSource, IndexStruct.class, sql);
 	}
@@ -71,11 +93,13 @@ public class PostgreSqlDDL implements IDDL {
 		public String getName() {
 			return name;
 		}
-		public String getUnique() {
-			return unique;
+		@Override
+		public boolean isUnique() {
+			return unique.equals("t");
 		}
-		public String getPrimary() {
-			return primary;
+		@Override
+		public boolean isPrimary() {
+			return primary.equals("t");
 		}
 		public String getWay() {
 			return way;
@@ -88,7 +112,7 @@ public class PostgreSqlDDL implements IDDL {
 	private final String TABLE_DES = "SELECT \"column_name\",\"data_type\",\"column_default\" FROM \"information_schema\".\"columns\" WHERE \"table_name\" = '%s';";
 	
 	@Override
-	public List<? extends ITableDes> getTableColumns(IDataSource dataSource, String tableName) {
+	public List<? extends ITableDes> getTableColumns(String tableName) {
 		String sql = String.format(TABLE_DES, tableName);
 		return Dao.queryAliasObjects(dataSource, TableDes.class, sql);
 	}
@@ -138,10 +162,10 @@ public class PostgreSqlDDL implements IDDL {
 	/**
 	 * 修改列属性
 	 */
-	private final String TABLE_CHANGE_COLUMN = "ALTER TABLE \"%s\" ALTER COLUMN \"%s\" TYPE %s;";
+	private final String TABLE_MODIFY_COLUMN = "ALTER TABLE \"%s\" ALTER COLUMN \"%s\" TYPE %s;";
 	
-	public String getTableChangeColumn(String tableName, String columnName, String columnDefine) {
-		return String.format(TABLE_CHANGE_COLUMN, tableName, columnName, columnDefine);
+	public String getTableModifyColumn(String tableName, String columnName, String columnDefine) {
+		return String.format(TABLE_MODIFY_COLUMN, tableName, columnName, columnDefine);
 	}
 	
 //	CREATE UNIQUE INDEX "idx_grade_clazz" ON "public"."student" USING btree (
@@ -173,7 +197,8 @@ public class PostgreSqlDDL implements IDDL {
 	 */
 	private final String SELECT_MAX_ID = "SELECT max(`%s`) as max_id FROM `%s` LIMIT 1;";
 	
-	public long getTableMaxId(IDataSource dataSource, String tableName, String primaryKeyName) {
+	@Override
+	public long getTableMaxId(String tableName, String primaryKeyName) {
 		String sql = String.format(SELECT_MAX_ID, primaryKeyName, tableName);
 		TableMaxId tableMaxId = Dao.queryAliasObject(dataSource, TableMaxId.class, sql);
 		return tableMaxId.maxId;
@@ -186,8 +211,9 @@ public class PostgreSqlDDL implements IDDL {
 	
 	private final String TABLE_AUTOINC = "SELECT currval(\"%s\"::regclass);";
 	
-	public long getTableAutoinc(IDataSource dataSource, String dbName, String tableName) {
-		TableStatus tableStatus = Dao.queryAliasObject(dataSource, TableStatus.class, TABLE_AUTOINC, dbName, tableName);
+	@Override
+	public long getTableAutoinc(String tableName) {
+		TableStatus tableStatus = Dao.queryAliasObject(dataSource, TableStatus.class, TABLE_AUTOINC, dataSource.getDbName(), tableName);
 		return tableStatus.autoIncrement;
 	}
 	
@@ -201,12 +227,23 @@ public class PostgreSqlDDL implements IDDL {
 	 */
 	private final String SET_AUTO_INCREMENT = "SELECT setval(\"%s\"::regclass, %s);";
 
+	@Override
 	public String setAutoIncrement(String tableName, long autoinc) {
 		return String.format(SET_AUTO_INCREMENT, tableName, autoinc);
 	}
 
 	@Override
-	public String getTableChangeIndex(String tableName, IndexMeta indexMeta) {
+	public String getTableModifyIndex(String tableName, IndexMeta indexMeta) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public String createTableSql(String tableName, EntityMeta<?> entityMeta) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public String getColumnDefine(ColumnMeta columnMeta) {
 		// TODO Auto-generated method stub
 		return null;
 	}

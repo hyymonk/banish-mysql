@@ -4,25 +4,23 @@
 package org.banish.mysql.table;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.banish.IDDL;
+import org.banish.IDDL.IIndexStruct;
+import org.banish.IDDL.ITableDes;
 import org.banish.mysql.annotation.Id.Strategy;
 import org.banish.mysql.annotation.enuma.IndexType;
 import org.banish.mysql.annotation.enuma.IndexWay;
-import org.banish.mysql.dao.Dao;
 import org.banish.mysql.dao.OriginDao;
 import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.IndexMeta;
 import org.banish.mysql.orm.column.ColumnMeta;
 import org.banish.mysql.orm.column.PrimaryKeyColumnMeta;
-import org.banish.mysql.table.ddl.DDL;
-import org.banish.mysql.table.ddl.DDL.IndexStruct;
-import org.banish.mysql.table.ddl.DDL.TableDes;
+import org.banish.mysql.table.ddl.MySqlDDL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
@@ -40,31 +38,28 @@ public class TableBuilder {
 	 * @param dao
 	 * @param tableName
 	 */
-	public static void build(OriginDao<?> dao, String tableName)  {
+	public static IDDL build(OriginDao<?> dao, String tableName)  {
 		if(SERVER_IDENTITY <= 0) {
 			throw new RuntimeException("数据库构建工具还没有指定服务器标识");
 		}
-		List<String> ddlSqls = new ArrayList<>();
+		IDDL iddl = new MySqlDDL(dao.getDataSource(), dao.getEntityMeta().isAutoBuild());
+		EntityMeta<?> entityMeta = dao.getEntityMeta();
 		
-		if (!DDL.isTableExist(dao.getDataSource(), tableName)) {
+		boolean tablExist = iddl.isTableExist(tableName);
+		if (!tablExist) {
 			// 创建数据表
-			String ddlSql = createTable(dao, tableName);
-			ddlSqls.add(ddlSql);
+			createTable(iddl, tableName, entityMeta);
 		} else {
 			// 更新数据表结构
-			List<String> tableDdlSqls = updateTable(dao, tableName);
-			ddlSqls.addAll(tableDdlSqls);
+			updateTable(iddl, tableName, entityMeta);
 		}
 		//更新索引
-		List<String> indexDdlSqls = updateIndex(dao, tableName);
-		ddlSqls.addAll(indexDdlSqls);
+		updateIndex(iddl, tableName, tablExist, entityMeta.getIndexMap());
 		//更新自增主键
-		List<String> autoIncDdlSqls = updateAutoIncrement(dao, tableName);
-		ddlSqls.addAll(autoIncDdlSqls);
+		updateAutoIncrement(iddl, tableName, tablExist, entityMeta);
 		
-		EntityMeta<?> entityMeta = dao.getEntityMeta();
-		if(!entityMeta.isAutoBuild() && !ddlSqls.isEmpty()) {
-			for(String ddlSql : ddlSqls) {
+		if(!entityMeta.isAutoBuild() && !iddl.getDDLs().isEmpty()) {
+			for(String ddlSql : iddl.getDDLs()) {
 				String errorMsg = String.format("在别名为%s的数据库中需要对名字为%s的表格作如下修正，请前往处理，参考语句如下：%s",
 						dao.getDataSource().getAlias(), tableName, ddlSql);
 				logger.warn(errorMsg);
@@ -74,172 +69,101 @@ public class TableBuilder {
 			logger.warn(errorMsg);
 //			throw new RuntimeException(errorMsg);
 		}
+		return iddl;
 	}
 	
 	/**
 	 * 创建数据表
 	 * @param baseDao
 	 */
-	private static String createTable(OriginDao<?> baseDao, String tableName) {
-		EntityMeta<?> entityMeta = baseDao.getEntityMeta();
-		String ddlSql = createTableSql(baseDao, tableName);
-		if(entityMeta.isAutoBuild()) {
-			Dao.executeSql(baseDao.getDataSource(), ddlSql);
-		}
-		logger.info("数据库DDL新建表：{}", ddlSql);
-		return ddlSql;
-	}
-	
-	/**
-	 * 构建创建表的语句
-	 * @param baseDao
-	 * @return
-	 */
-	private static String createTableSql(OriginDao<?> baseDao, String tableName) {
-		EntityMeta<?> entityMeta = baseDao.getEntityMeta();
-		StringBuilder result = new StringBuilder();
-		result.append(String.format("CREATE TABLE `%s` (", tableName));
-		
-		for(ColumnMeta columnMeta : entityMeta.getColumnList()) {
-			result.append(getColumnDefine(columnMeta)).append(",");
-		}
-		
-		ColumnMeta primaryKeyMeta = entityMeta.getPrimaryKeyMeta();
-		//创建表的时候只进行了主键的定义，索引的设置会在表构建好之后进行处理
-		result.append(String.format("PRIMARY KEY (`%s`)", primaryKeyMeta.getColumnName()));
-		//这里并没有对自增ID进行初始处理，自增ID的设置会在表构建好之后进行处理
-		result.append(") ENGINE=InnoDB DEFAULT CHARSET=").append(entityMeta.getTableCharset().value());
-		result.append(" COMMENT='").append(entityMeta.getTableComment()).append("';");
-		return result.toString();
+	private static void createTable(IDDL iddl, String tableName, EntityMeta<?> entityMeta) {
+		String ddlSql = iddl.createTableSql(tableName, entityMeta);
+		iddl.addDDL(ddlSql, "数据库DDL创建表");
 	}
 	
 	/**
 	 * 更新数据表结构
 	 * @param baseDao
 	 */
-	private static List<String> updateTable(OriginDao<?> baseDao, String tableName) {
+	private static void updateTable(IDDL iddl, String tableName, EntityMeta<?> entityMeta) {
 		//查询数据库中的字段定义
-		List<TableDes> tableDesList = DDL.getTableColumns(baseDao.getDataSource(), tableName);
+		List<? extends ITableDes> tableDesList = iddl.getTableColumns(tableName);
 		
 		// 数据表列的名字与数据类型集合
-		Map<String, TableDes> dbColumns = new HashMap<>();
+		Map<String, ITableDes> dbColumns = new HashMap<>();
 		
-		boolean autoBuild = baseDao.getEntityMeta().isAutoBuild();
-		
-		Map<String, ColumnMeta> columnMetas = baseDao.getEntityMeta().getColumnMap();
+		Map<String, ColumnMeta> columnMetas = entityMeta.getColumnMap();
 		//先以查询结果来检测数据表中是否存在实体类中没有定义的列，有则删除
 		
-		List<String> updateDdlSqls = new ArrayList<>();
-		for (TableDes tableDes : tableDesList) {
+		for (ITableDes tableDes : tableDesList) {
 			String columnName = tableDes.getField();
 			if (!columnMetas.containsKey(columnName)) {
 				// 删除列
-				String ddlSql = DDL.getTableDropColumn(tableName, columnName);
-				if(autoBuild) {
-					Dao.executeSql(baseDao.getDataSource(), ddlSql);
-				}
-				logger.info("数据库DDL删除列：{}", ddlSql);
-				updateDdlSqls.add(ddlSql);
+				String ddlSql = iddl.getTableDropColumn(tableName, columnName);
+				iddl.addDDL(ddlSql, "数据库DDL删除列");
 			} else {
 				dbColumns.put(columnName, tableDes);
 			}
 		}
 		//再以实体类元数据来检测数据表中是否缺失了某些列，缺失则添加，
 		//没有缺失则对比数据类型，不一致则以实体类数据类型为基础修改数据表的数据类型
-		for (Entry<String, ColumnMeta> entry : baseDao.getEntityMeta().getColumnMap().entrySet()) {
+		for (Entry<String, ColumnMeta> entry : entityMeta.getColumnMap().entrySet()) {
 			ColumnMeta columnMeta = entry.getValue();
 			
 			if (!dbColumns.containsKey(entry.getKey())) {
 				// 新增列
-				String ddlSql = DDL.getTableAddColumn(tableName, getColumnDefine(columnMeta));
-				if(autoBuild) {
-					Dao.executeSql(baseDao.getDataSource(), ddlSql);
-				}
-				logger.info("数据库DDL新增列：{}", ddlSql);
-				updateDdlSqls.add(ddlSql);
+				String ddlSql = iddl.getTableAddColumn(tableName, iddl.getColumnDefine(columnMeta));
+				iddl.addDDL(ddlSql, "数据库DDL新增列");
 			} else {
 				// 数据表中字段的类型
-				TableDes columnDes = dbColumns.get(entry.getKey());
-				// 判断字段的类型、长度是否发生了改变
+				ITableDes columnDes = dbColumns.get(entry.getKey());
+				// 判断字段的类型、长度是否发生了改变 TODO 不同数据库的判定不一样
 				boolean isChange = columnMeta.isChange(columnDes.getType(), columnDes.getExtra());
 				if (!isChange) {
 					continue;
 				}
 				// 修改列
-				String ddlSql = DDL.TABLE_CHANGE_COLUMN.replaceAll("#tableName#", tableName).replaceAll("#columnName#", entry.getKey())
-						.replaceAll("#columnDefine#", getColumnDefine(columnMeta));
-				if(autoBuild) {
-					Dao.executeSql(baseDao.getDataSource(), ddlSql);
-				}
-				logger.info("数据库DDL修改列：{}", ddlSql);
-				updateDdlSqls.add(ddlSql);
+				String ddlSql = iddl.getTableModifyColumn(tableName, entry.getKey(), iddl.getColumnDefine(columnMeta));
+				iddl.addDDL(ddlSql, "数据库DDL修改列");
 			}
 		}
-		return updateDdlSqls;
 	}
-	
-	/**
-	 * 获取列定义
-	 * @param columnMeta
-	 * @return
-	 */
-	private static String getColumnDefine(ColumnMeta columnMeta) {
-		StringBuilder result = new StringBuilder();
-		result.append(String.format("`%s` %s", columnMeta.getColumnName(), columnMeta.dbColumnType()));
-		
-		String autoIncrement = "";
-		if(columnMeta instanceof PrimaryKeyColumnMeta) {
-			PrimaryKeyColumnMeta keyMeta = (PrimaryKeyColumnMeta)columnMeta;
-			if(keyMeta.getStrategy() == Strategy.AUTO) {
-				autoIncrement = "AUTO_INCREMENT";
-			}
-		}
-		
-		result.append(" ").append(columnMeta.defaultValue()).append(" ").append(autoIncrement);
-		// 字段备注
-		result.append(" COMMENT '").append(columnMeta.getComment()).append("'");
-		return result.toString();
-	}
-	
 	
 	/**
 	 * 更新索引
-	 * @param baseDao
+	 * @param iddl
+	 * @param tableName
+	 * @param entityIndexes 实体类中定义的索引<索引名字，索引对象>
 	 */
-	private static List<String> updateIndex(OriginDao<?> baseDao, String tableName) {
-		List<String> updateDdlSqls = new ArrayList<>();
-		
-		boolean autoBuild = baseDao.getEntityMeta().isAutoBuild();
-		
-		// 数据表中已有的索引<索引名字，索引对象>
-		Map<String, IndexMeta> indexMap = getDbIndex(baseDao, tableName);
-		// 实体类中定义的索引<索引名字，索引对象>
-		Map<String, IndexMeta> entityIndexes = baseDao.getEntityMeta().getIndexMap();
-		// 以实体类为基准比对数据表中的索引状态
-		for(IndexMeta entityIndex : entityIndexes.values()) {
-			IndexMeta dbIndex = indexMap.get(entityIndex.getName());
-			if(dbIndex == null) {
-				//添加索引
-				String ddlSql = DDL.getTableAddIndex(tableName, entityIndex);
-				if(autoBuild) {
-					Dao.executeSql(baseDao.getDataSource(), ddlSql);
-				}
-				logger.info("数据库DDL添加索引：{}", ddlSql);
-				updateDdlSqls.add(ddlSql);
-			} else {
-				if (entityIndex.getType() != dbIndex.getType() || entityIndex.getWay() != dbIndex.getWay()
-						|| !entityIndex.getColumns().equals(dbIndex.getColumns())) {
-					//更新索引
-					String ddlSql = DDL.getTableModifyIndex(tableName, entityIndex);
-					if(autoBuild) {
-						Dao.executeSql(baseDao.getDataSource(), ddlSql);
+	private static void updateIndex(IDDL iddl, String tableName, boolean tablExist, Map<String, IndexMeta> entityIndexes) {
+		if(tablExist) {
+			// 数据表中已有的索引<索引名字，索引对象>
+			Map<String, IndexMeta> indexMap = getDbIndex(iddl, tableName);
+			
+			// 以实体类为基准比对数据表中的索引状态
+			for(IndexMeta entityIndex : entityIndexes.values()) {
+				IndexMeta dbIndex = indexMap.get(entityIndex.getName());
+				if(dbIndex == null) {
+					//添加索引
+					String ddlSql = iddl.getTableAddIndex(tableName, entityIndex);
+					iddl.addDDL(ddlSql, "数据库DDL添加索引");
+				} else {
+					if (entityIndex.getType() == dbIndex.getType() && entityIndex.getWay() == dbIndex.getWay()
+							&& entityIndex.getColumns().equals(dbIndex.getColumns())) {
+						continue;
 					}
-					logger.info("数据库DDL修改索引：{}", ddlSql);
-					updateDdlSqls.add(ddlSql);
+					//更新索引
+					String ddlSql = iddl.getTableModifyIndex(tableName, entityIndex);
+					iddl.addDDL(ddlSql, "数据库DDL修改索引");
 				}
 			}
+		} else {
+			for(IndexMeta entityIndex : entityIndexes.values()) {
+				//添加索引
+				String ddlSql = iddl.getTableAddIndex(tableName, entityIndex);
+				iddl.addDDL(ddlSql, "数据库DDL添加索引");
+			}
 		}
-		return updateDdlSqls;
 	}
 	
 	/**
@@ -247,25 +171,23 @@ public class TableBuilder {
 	 * @param baseDao
 	 * @return
 	 */
-	private static Map<String, IndexMeta> getDbIndex(OriginDao<?> dao, String tableName) {
+	private static Map<String, IndexMeta> getDbIndex(IDDL iddl, String tableName) {
 		// 查询当前表格索引
-		List<IndexStruct> keys = DDL.getKeys(dao.getDataSource(), tableName);
-		
+		List<? extends IIndexStruct> keys = iddl.getKeys(tableName);
 		
 		// 表中已有的索引<索引名字，索引对象>
 		Map<String, IndexMeta> indexMap = new HashMap<>();
-		for (IndexStruct indexStruct : keys) {
+		for (IIndexStruct indexStruct : keys) {
 			String indexName = indexStruct.getName();
 			IndexMeta index = indexMap.get(indexName);
 			if(index == null) {
 				index = new IndexMeta();
 				index.setName(indexName);
 				//索引的类型
-				int isNonUnique = indexStruct.getNonUnique();
-				index.setType(isNonUnique == 0 ? IndexType.UNIQUE : IndexType.NORMAL);
+				index.setType(indexStruct.isUnique() ? IndexType.UNIQUE : IndexType.NORMAL);
 				//索引的方式
-				String way = indexStruct.getWay();
-				index.setWay(!"BTREE".equals(way) ? IndexWay.HASH : IndexWay.BTREE);
+				String way = indexStruct.getWay().toLowerCase();
+				index.setWay("btree".equals(way) ? IndexWay.BTREE : IndexWay.HASH);
 				
 				indexMap.put(indexName, index);
 			}
@@ -278,49 +200,47 @@ public class TableBuilder {
 	 * 更新自增主键
 	 * @param baseDao
 	 */
-	private static List<String> updateAutoIncrement(OriginDao<?> baseDao, String tableName) {
-		PrimaryKeyColumnMeta keyMeta = baseDao.getEntityMeta().getPrimaryKeyMeta();
+	private static void updateAutoIncrement(IDDL iddl, String tableName, boolean tablExist, EntityMeta<?> entityMeta) {
+		PrimaryKeyColumnMeta keyMeta = entityMeta.getPrimaryKeyMeta();
 		if(keyMeta.getStrategy() != Strategy.AUTO) {
-			return Collections.emptyList();
+			return;
 		}
 		
-		boolean autoBuild = baseDao.getEntityMeta().isAutoBuild();
-		
-		String mysqlVersion = DDL.getMysqlVersion(baseDao.getDataSource());
-		//当前表中定义的自增主键
-		long currAutoId = 0;
-		if(mysqlVersion.startsWith("8")) {
-			currAutoId = DDL.getTableAutoinc8(baseDao.getDataSource(), baseDao.getDataSource().getDbName(), tableName);
-		} else {
-			currAutoId = DDL.getTableAutoinc5(baseDao.getDataSource(), baseDao.getDataSource().getDbName(), tableName);
-		}
-		long finalMaxId = currAutoId;
-		//查询出当前表中最大的自增主键
-		long currMaxId = DDL.getTableMaxId(baseDao.getDataSource(), tableName, keyMeta.getColumnName());
-		if(currMaxId + 1 > finalMaxId) {
-			finalMaxId = currMaxId + 1;
-		}
-		//业务开发定义的自增主键
-		long customInitId = baseDao.getEntityMeta().getCustomInitId();
-		if(customInitId > 0) {
-			customInitId = customInitId + 1;
-		} else {
-			customInitId = keyMeta.getBase() * SERVER_IDENTITY + 1;
-		}
-		
-		if(customInitId > finalMaxId) {
-			finalMaxId = customInitId;
-		}
-		
-		List<String> ddlSqls = new ArrayList<>();
-		if(finalMaxId > currAutoId) {
-			String ddlSql = DDL.setAutoIncrement(tableName, finalMaxId);
-			if(autoBuild) {
-				Dao.executeSql(baseDao.getDataSource(), ddlSql);
+		if(tablExist) {
+			//当前表中定义的自增主键
+			long currAutoId = iddl.getTableAutoinc(tableName);
+			long finalMaxId = currAutoId;
+			//查询出当前表中最大的自增主键
+			long currMaxId = iddl.getTableMaxId(tableName, keyMeta.getColumnName());
+			if(currMaxId + 1 > finalMaxId) {
+				finalMaxId = currMaxId + 1;
 			}
-			logger.info("数据库DDL修改自增ID：{}", ddlSql);
-			ddlSqls.add(ddlSql);
+			//业务开发定义的自增主键
+			long customInitId = entityMeta.getCustomInitId();
+			if(customInitId > 0) {
+				customInitId = customInitId + 1;
+			} else {
+				customInitId = keyMeta.getBase() * SERVER_IDENTITY + 1;
+			}
+			if(customInitId > finalMaxId) {
+				finalMaxId = customInitId;
+			}
+			if(finalMaxId > currAutoId) {
+				String ddlSql = iddl.setAutoIncrement(tableName, finalMaxId);
+				logger.info("currAutoId:{}, currMaxId:{}, customInitId:{}, finalMaxId:{}", currAutoId, currMaxId, customInitId, finalMaxId);
+				iddl.addDDL(ddlSql, "数据库DDL修改自增ID");
+			}
+		} else {
+			//业务开发定义的自增主键
+			long customInitId = entityMeta.getCustomInitId();
+			if(customInitId > 0) {
+				customInitId = customInitId + 1;
+			} else {
+				customInitId = keyMeta.getBase() * SERVER_IDENTITY + 1;
+			}
+			String ddlSql = iddl.setAutoIncrement(tableName, customInitId);
+			logger.info("currAutoId:{}, currMaxId:{}, customInitId:{}, finalMaxId:{}", 0, 0, customInitId, customInitId);
+			iddl.addDDL(ddlSql, "数据库DDL修改自增ID");
 		}
-		return ddlSqls;
 	}
 }

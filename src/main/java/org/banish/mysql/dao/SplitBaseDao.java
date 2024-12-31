@@ -11,12 +11,12 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.banish.IDDL;
 import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.enuma.SplitWay;
 import org.banish.mysql.database.IDataSource;
 import org.banish.mysql.orm.SplitEntityMeta;
 import org.banish.mysql.table.TableBuilder;
-import org.banish.mysql.table.ddl.DDL;
 import org.banish.mysql.table.dml.ISql;
 import org.banish.mysql.table.dml.SplitSql;
 
@@ -31,6 +31,8 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 	private ConcurrentMap<String, SplitSql<T>> splitSqlMap = new ConcurrentHashMap<>();
 	
 	private SplitEntityMeta<T> logEntityMeta;
+	
+	private IDDL iddl;
 	
 	public SplitBaseDao(IDataSource dataSource, SplitEntityMeta<T> entityMeta) {
 		super(dataSource, entityMeta);
@@ -68,7 +70,7 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 	
 	private SplitSql<T> createSql(String tableName) {
 		//自动建表
-		TableBuilder.build(this, tableName);
+		iddl = TableBuilder.build(this, tableName);
 		//构建Sql对象
 		SplitSql<T> sql = new SplitSql<>(this.getEntityMeta(), tableName);
 		return sql;
@@ -174,7 +176,7 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 		String tableName = this.logEntityMeta.getSplitTableName(splitValue);
 		SplitSql<T> isql = splitSqlMap.get(tableName);
 		if(isql == null) {
-			if(DDL.isTableExist(getDataSource(), tableName)) {
+			if(iddl.isTableExist(tableName)) {
 				synchronized (this) {
 					isql = splitSqlMap.get(tableName);
 					if(isql == null) {
@@ -194,7 +196,7 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 		String tableName = this.logEntityMeta.getSplitTableName(splitValue);
 		SplitSql<T> isql = splitSqlMap.get(tableName);
 		if(isql == null) {
-			if(DDL.isTableExist(getDataSource(), tableName)) {
+			if(iddl.isTableExist(tableName)) {
 				synchronized (this) {
 					isql = splitSqlMap.get(tableName);
 					if(isql == null) {
@@ -212,7 +214,6 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 
 	@Override
 	public long countWhere(String where, Object... params) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 }
