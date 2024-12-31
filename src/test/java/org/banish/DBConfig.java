@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.mysql.example;
+package org.banish;
 
 /**
  * @author YY

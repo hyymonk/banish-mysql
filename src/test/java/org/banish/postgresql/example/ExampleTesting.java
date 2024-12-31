@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.mysql.example;
+package org.banish.postgresql.example;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -66,8 +66,11 @@ public class ExampleTesting {
 		dbConfig.setDbName("data_test");
 		dbConfig.setAlias("data");
 		dbConfig.setId(1);
+		dbConfig.setUser("postgres");
+		dbConfig.setPassword("123456");
+		dbConfig.setIpPort("127.0.0.1:5432");
 		
-		MySqlDataSource dataSource = new MySqlDataSource(dbConfig);
+		PostgreSqlDataSource dataSource = new PostgreSqlDataSource(dbConfig);
 		
 		DaosBooter daosBuilder = new DaosBooter(1);
 		daosBuilder.addDataSource(dataSource);

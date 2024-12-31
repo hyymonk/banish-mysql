@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.mysql.example;
+package org.banish;
 
 import java.io.IOException;
 import java.lang.reflect.AnnotatedType;

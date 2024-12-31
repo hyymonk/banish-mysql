@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.mysql.example;
+package org.banish;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

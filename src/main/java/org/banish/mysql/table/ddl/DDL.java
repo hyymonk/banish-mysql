@@ -33,7 +33,7 @@ public class DDL {
 	}
 	
 	/**
-	 * 查询按时间的分表
+	 * 查询按时间的分表，历史的表就不用去动了
 	 */
 	public final static String SELECT_SUBMETER_TABLE_NAME = "SELECT `TABLE_NAME` FROM `INFORMATION_SCHEMA`.`TABLES` WHERE `TABLE_SCHEMA`=? AND `TABLE_NAME` LIKE ?;";
 
@@ -85,6 +85,7 @@ public class DDL {
 		private String field;
 		@Column(name = "Type", comment = "字段类型")
 		private String type;
+		//主键是否自动递增会在这里体现
 		@Column(name = "Extra", comment = "扩展信息")
 		private String extra;
 		public String getField() {
