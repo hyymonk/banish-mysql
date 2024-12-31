@@ -11,9 +11,9 @@ import org.banish.ExampleEntity;
 import org.banish.ExampleEntity.BankCard;
 import org.banish.ExampleEntity.Country;
 import org.banish.ExampleEntity.EducationInfo;
+import org.banish.sql.DaosBooter;
+import org.banish.sql.DaosBooter.Daos;
 import org.banish.JsonFormatter;
-import org.banish.mysql.DaosBooter;
-import org.banish.mysql.DaosBooter.Daos;
 
 /**
  * @author YY

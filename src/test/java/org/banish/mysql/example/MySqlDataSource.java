@@ -7,9 +7,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.banish.DBConfig;
-import org.banish.base.IMetaFactory;
-import org.banish.mysql.database.IDataSource;
-import org.banish.mysql.orm.column.MySqlMetaFactory;
+import org.banish.sql.core.datasource.IDataSource;
+import org.banish.sql.core.orm.IMetaFactory;
+import org.banish.sql.mysql.orm.column.MySqlMetaFactory;
 
 import com.alibaba.druid.pool.DruidDataSource;
 

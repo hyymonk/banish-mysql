@@ -9,13 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.banish.mysql.AbstractEntity;
-import org.banish.mysql.annotation.Column;
-import org.banish.mysql.annotation.Id;
-import org.banish.mysql.annotation.Id.Strategy;
-import org.banish.mysql.annotation.Index;
-import org.banish.mysql.annotation.Table;
-import org.banish.mysql.annotation.enuma.IndexType;
+import org.banish.sql.core.annotation.Column;
+import org.banish.sql.core.annotation.Id;
+import org.banish.sql.core.annotation.Index;
+import org.banish.sql.core.annotation.Table;
+import org.banish.sql.core.annotation.Id.Strategy;
+import org.banish.sql.core.annotation.enuma.IndexType;
+import org.banish.sql.core.entity.AbstractEntity;
 
 /**
  * @author YY

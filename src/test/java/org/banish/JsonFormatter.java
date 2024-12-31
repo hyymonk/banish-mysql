@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.banish.mysql.valueformat.ValueFormatters.ValueFormatter;
+import org.banish.sql.core.valueformat.ValueFormatters.ValueFormatter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
