@@ -7,9 +7,9 @@ import java.util.List;
 
 import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.database.IDataSource;
+import org.banish.mysql.orm.ColumnMeta;
 import org.banish.mysql.orm.IAsyncEntityMeta;
 import org.banish.mysql.orm.SplitAsyncEntityMeta;
-import org.banish.mysql.orm.column.ColumnMeta;
 
 /**
  * @author YY

@@ -13,8 +13,8 @@ import java.util.List;
 
 import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.database.IDataSource;
+import org.banish.mysql.orm.ColumnMeta;
 import org.banish.mysql.orm.EntityMeta;
-import org.banish.mysql.orm.column.ColumnMeta;
 import org.banish.mysql.table.TableBuilder;
 import org.banish.mysql.table.dml.DefaultSql;
 import org.banish.mysql.table.dml.ISql;

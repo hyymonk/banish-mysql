@@ -5,8 +5,6 @@ package org.banish.mysql.orm;
 
 import java.util.List;
 
-import org.banish.mysql.orm.column.ColumnMeta;
-
 /**
  * @author YY
  *

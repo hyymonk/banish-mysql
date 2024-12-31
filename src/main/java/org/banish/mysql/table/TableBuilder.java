@@ -16,10 +16,10 @@ import org.banish.mysql.annotation.Id.Strategy;
 import org.banish.mysql.annotation.enuma.IndexType;
 import org.banish.mysql.annotation.enuma.IndexWay;
 import org.banish.mysql.dao.OriginDao;
+import org.banish.mysql.orm.ColumnMeta;
 import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.IndexMeta;
-import org.banish.mysql.orm.column.ColumnMeta;
-import org.banish.mysql.orm.column.PrimaryKeyColumnMeta;
+import org.banish.mysql.orm.column.MPrimaryKeyColumnMeta;
 import org.banish.mysql.table.ddl.MySqlDDL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,7 +201,7 @@ public class TableBuilder {
 	 * @param baseDao
 	 */
 	private static void updateAutoIncrement(IDDL iddl, String tableName, boolean tablExist, EntityMeta<?> entityMeta) {
-		PrimaryKeyColumnMeta keyMeta = entityMeta.getPrimaryKeyMeta();
+		MPrimaryKeyColumnMeta keyMeta = entityMeta.getPrimaryKeyMeta();
 		if(keyMeta.getStrategy() != Strategy.AUTO) {
 			return;
 		}

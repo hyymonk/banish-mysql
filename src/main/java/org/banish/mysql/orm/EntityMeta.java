@@ -12,9 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.banish.mysql.AbstractEntity;
+import org.banish.mysql.annotation.Column;
+import org.banish.mysql.annotation.Id;
 import org.banish.mysql.annotation.enuma.Charset;
-import org.banish.mysql.orm.column.ColumnMeta;
-import org.banish.mysql.orm.column.PrimaryKeyColumnMeta;
+import org.banish.mysql.orm.column.MColumnMetaFactory;
+import org.banish.mysql.orm.column.MPrimaryKeyColumnMeta;
 import org.banish.mysql.orm.table.ITable;
 import org.banish.mysql.util.ReflectUtil;
 import org.slf4j.Logger;
@@ -55,7 +57,7 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	/**
 	 * 主键元数据
 	 */
-	private final PrimaryKeyColumnMeta primaryKeyMeta;
+	private final MPrimaryKeyColumnMeta primaryKeyMeta;
 	/**
 	 * 所有字段列表，包含主键，在合服的时候主键会被保留原来的值
 	 */
@@ -91,7 +93,7 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 		Map<String, ColumnMeta> columnNameMap = new HashMap<>(allFields.size());
 		Map<String, String> fieldToColumnMap = new HashMap<>(allFields.size());
 		
-		this.primaryKeyMeta = ColumnMeta.buildAndReturnKey(allFields, columnList, columnNameMap, fieldToColumnMap);
+		this.primaryKeyMeta = buildAndReturnKey(allFields, columnList, columnNameMap, fieldToColumnMap);
 		if(this.primaryKeyMeta == null) {
 			throw new RuntimeException(clazz.getSimpleName() + " @Id field not found");
 		}
@@ -101,6 +103,44 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 		//构建索引元数据
 		this.indexMap = Collections.unmodifiableMap(IndexMeta.build(clazz, table, this.tableName, this.fieldToColumn));
 	}
+	
+	
+	/**
+	 * 创建字段的元数据，并返回主键原数据
+	 * @param allFields
+	 * @param columnList
+	 * @param columnMap
+	 * @return
+	 */
+	private MPrimaryKeyColumnMeta buildAndReturnKey(List<Field> allFields, List<ColumnMeta> columnList,
+			Map<String, ColumnMeta> columnMap, Map<String, String> fieldMap) {
+        //列信息
+    	MPrimaryKeyColumnMeta idMeta = null;
+        for (Field field : allFields) {
+            Column column = field.getAnnotation(Column.class);
+            if(column == null) {
+                continue;
+            }
+            Id id = field.getAnnotation(Id.class);
+            ColumnMeta columnMeta = null;
+            if(id != null) {
+            	if(idMeta == null) {
+    				idMeta = MColumnMetaFactory.INS.newPrimaryKeyColumnMeta(field);
+    			} else {
+    				throw new RuntimeException(field.getDeclaringClass().getSimpleName() + " @Id field more than one");
+    			}
+            	columnMeta = idMeta;
+            } else {
+            	columnMeta = MColumnMetaFactory.INS.build(field);
+            }
+            //构建数据库字段与对象属性关系
+            columnList.add(columnMeta);
+            columnMap.put(columnMeta.getColumnName(), columnMeta);
+            fieldMap.put(columnMeta.getFieldName(), columnMeta.getColumnName());
+        }
+        return idMeta;
+    }
+	
 
 	public Class<T> getClazz() {
 		return clazz;
@@ -110,7 +150,7 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 		return tableName;
 	}
 
-	public PrimaryKeyColumnMeta getPrimaryKeyMeta() {
+	public MPrimaryKeyColumnMeta getPrimaryKeyMeta() {
 		return primaryKeyMeta;
 	}
 

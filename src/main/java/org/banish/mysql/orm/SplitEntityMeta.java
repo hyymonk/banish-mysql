@@ -13,15 +13,14 @@ import java.util.Date;
 import org.banish.mysql.AbstractEntity;
 import org.banish.mysql.annotation.SplitTable;
 import org.banish.mysql.annotation.enuma.SplitWay;
-import org.banish.mysql.orm.column.ByteColumnMeta;
-import org.banish.mysql.orm.column.ColumnMeta;
-import org.banish.mysql.orm.column.DateColumnMeta;
-import org.banish.mysql.orm.column.IntegerColumnMeta;
-import org.banish.mysql.orm.column.LocalDateTimeColumnMeta;
-import org.banish.mysql.orm.column.LongColumnMeta;
-import org.banish.mysql.orm.column.LongTimeColumnMeta;
-import org.banish.mysql.orm.column.ShortColumnMeta;
-import org.banish.mysql.orm.column.StringColumnMeta;
+import org.banish.mysql.orm.column.MByteColumnMeta;
+import org.banish.mysql.orm.column.MDateColumnMeta;
+import org.banish.mysql.orm.column.MIntegerColumnMeta;
+import org.banish.mysql.orm.column.MLocalDateTimeColumnMeta;
+import org.banish.mysql.orm.column.MLongColumnMeta;
+import org.banish.mysql.orm.column.MLongTimeColumnMeta;
+import org.banish.mysql.orm.column.MShortColumnMeta;
+import org.banish.mysql.orm.column.MStringColumnMeta;
 import org.banish.mysql.orm.table.SplitTableInfo;
 
 /**
@@ -58,15 +57,15 @@ public class SplitEntityMeta<T extends AbstractEntity> extends EntityMeta<T> {
 						clazz.getSimpleName() + " can not find @TimeTable column named " + splitTable.byColumn());
 			}
 			if(this.splitWay == SplitWay.VALUE) {
-				if(splitingMeta instanceof LongColumnMeta) {
+				if(splitingMeta instanceof MLongColumnMeta) {
 					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof IntegerColumnMeta) {
+				} else if(splitingMeta instanceof MIntegerColumnMeta) {
 					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof ShortColumnMeta) {
+				} else if(splitingMeta instanceof MShortColumnMeta) {
 					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof ByteColumnMeta) {
+				} else if(splitingMeta instanceof MByteColumnMeta) {
 					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof StringColumnMeta) {
+				} else if(splitingMeta instanceof MStringColumnMeta) {
 					this.splitMeta = splitingMeta;
 				} else {
 					throw new RuntimeException(String.format("实体类%s的字段%s无法作为分表的元数据", clazz.getSimpleName(), splitingMeta.getFieldName()));
@@ -74,13 +73,13 @@ public class SplitEntityMeta<T extends AbstractEntity> extends EntityMeta<T> {
 			} else if (this.splitWay == SplitWay.MINUTE || this.splitWay == SplitWay.HOUR
 					|| this.splitWay == SplitWay.DAY || this.splitWay == SplitWay.WEEK
 					|| this.splitWay == SplitWay.MONTH || this.splitWay == SplitWay.YEAR) {
-				if(splitingMeta instanceof DateColumnMeta) {
+				if(splitingMeta instanceof MDateColumnMeta) {
 					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof LocalDateTimeColumnMeta) {
+				} else if(splitingMeta instanceof MLocalDateTimeColumnMeta) {
 					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof LongTimeColumnMeta) {
+				} else if(splitingMeta instanceof MLongTimeColumnMeta) {
 					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof LongColumnMeta) {
+				} else if(splitingMeta instanceof MLongColumnMeta) {
 					this.splitMeta = splitingMeta;
 				} else {
 					throw new RuntimeException(String.format("实体类%s的字段%s无法作为分表的元数据", clazz.getSimpleName(), splitingMeta.getFieldName()));

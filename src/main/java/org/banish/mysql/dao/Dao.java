@@ -16,8 +16,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.banish.mysql.database.IDataSource;
 import org.banish.mysql.orm.AliasEntityMeta;
+import org.banish.mysql.orm.ColumnMeta;
 import org.banish.mysql.orm.IEntityMeta;
-import org.banish.mysql.orm.column.ColumnMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

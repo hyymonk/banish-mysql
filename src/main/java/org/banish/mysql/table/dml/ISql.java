@@ -3,8 +3,8 @@
  */
 package org.banish.mysql.table.dml;
 
+import org.banish.mysql.orm.ColumnMeta;
 import org.banish.mysql.orm.EntityMeta;
-import org.banish.mysql.orm.column.ColumnMeta;
 
 /**
  * @author YY

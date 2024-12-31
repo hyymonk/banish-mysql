@@ -11,10 +11,10 @@ import org.banish.mysql.annotation.Column;
 import org.banish.mysql.annotation.Id.Strategy;
 import org.banish.mysql.dao.Dao;
 import org.banish.mysql.database.IDataSource;
+import org.banish.mysql.orm.ColumnMeta;
 import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.IndexMeta;
-import org.banish.mysql.orm.column.ColumnMeta;
-import org.banish.mysql.orm.column.PrimaryKeyColumnMeta;
+import org.banish.mysql.orm.column.MPrimaryKeyColumnMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -294,8 +294,8 @@ public class PostgreSqlDDL implements IDDL {
 		StringBuilder result = new StringBuilder();
 		result.append(String.format("\"%s\" %s", columnMeta.getColumnName(), columnMeta.dbColumnType()));
 		String autoIncrement = "";
-		if(columnMeta instanceof PrimaryKeyColumnMeta) {
-			PrimaryKeyColumnMeta keyMeta = (PrimaryKeyColumnMeta)columnMeta;
+		if(columnMeta instanceof MPrimaryKeyColumnMeta) {
+			MPrimaryKeyColumnMeta keyMeta = (MPrimaryKeyColumnMeta)columnMeta;
 			if(keyMeta.getStrategy() == Strategy.AUTO) {
 				autoIncrement = "AUTO_INCREMENT";
 			}

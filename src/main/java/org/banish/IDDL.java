@@ -5,9 +5,9 @@ package org.banish;
 
 import java.util.List;
 
+import org.banish.mysql.orm.ColumnMeta;
 import org.banish.mysql.orm.EntityMeta;
 import org.banish.mysql.orm.IndexMeta;
-import org.banish.mysql.orm.column.ColumnMeta;
 
 /**
  * @author YY
