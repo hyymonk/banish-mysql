@@ -18,8 +18,8 @@ public class PStringColumnMeta extends ColumnMeta {
 	private final String[] extra;
 	private final int length;
 	
-	public PStringColumnMeta(Field field) {
-		super(field);
+	protected PStringColumnMeta(Field field, boolean canUseForSplit) {
+		super(field, canUseForSplit);
 		Column column = field.getAnnotation(Column.class);
 		int length = 0;
 		if(column != null) {
@@ -32,6 +32,10 @@ public class PStringColumnMeta extends ColumnMeta {
 			length = 255;
 		}
 		this.length = length;
+	}
+	
+	public PStringColumnMeta(Field field) {
+		this(field, true);
 	}
 
 	@Override

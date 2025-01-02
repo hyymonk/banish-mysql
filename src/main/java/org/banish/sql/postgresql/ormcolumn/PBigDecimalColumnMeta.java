@@ -18,7 +18,7 @@ public class PBigDecimalColumnMeta extends ColumnMeta {
 	private final String[] extra;
 	
 	public PBigDecimalColumnMeta(Field field) {
-		super(field);
+		super(field, false);
 		Column column = field.getAnnotation(Column.class);
 		if(column != null) {
 			this.extra = column.extra();

@@ -15,7 +15,7 @@ import org.banish.sql.core.orm.ColumnMeta;
 public class MBooleanColumnMeta extends ColumnMeta {
 
 	public MBooleanColumnMeta(Field field) {
-		super(field);
+		super(field, false);
 	}
 
 	@Override
@@ -30,7 +30,7 @@ public class MBooleanColumnMeta extends ColumnMeta {
 
 	@Override
 	public void fillValue(Object t, int columnIndex, ResultSet rs) throws Exception {
-		String value = rs.getString(columnIndex);
+		String value = rs.getString(columnIndex).trim();
 		if("true".equals(value) || "True".equals(value) || "TRUE".equals(value) || "1".equals(value)) {
 			field.setBoolean(t, true);
 		} else {

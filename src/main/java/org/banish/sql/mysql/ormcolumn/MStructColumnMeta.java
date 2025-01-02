@@ -20,7 +20,7 @@ public class MStructColumnMeta extends MStringColumnMeta {
 	private final String formatter;
 	
 	public MStructColumnMeta(Field field) {
-		super(field);
+		super(field, false);
 		Column column = field.getAnnotation(Column.class);
 		if("".equals(column.formatter())) {
 			this.formatter = "json";

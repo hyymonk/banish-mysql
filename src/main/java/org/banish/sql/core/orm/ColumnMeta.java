@@ -37,15 +37,21 @@ public abstract class ColumnMeta {
 	 * 备注
 	 */
 	protected final String comment;
+	/**
+	 * 是否可用于作为分表时的列
+	 */
+	private final boolean canUseForSplit;
+	
 	//取消了默认值的设定，
 	//	第一程序字段在创建实体时对于原生类型有默认值，如boolean类型，程序的默认值是false，但声明默认值为true就显得矛盾
 	//	第二像结构体、容器类、时间类字段也应该在创建实体时设置对应的值
 	
-	protected ColumnMeta(Field field) {
+	protected ColumnMeta(Field field, boolean canUseForSplit) {
 		this.field = field;
 		//用于通过反射来对对象中的属性进行赋值
 		this.field.setAccessible(true);
 		this.clazz = field.getType();
+		this.canUseForSplit = canUseForSplit;
 		
 		Column column = field.getAnnotation(Column.class);
 		if(column == null) {
@@ -109,5 +115,8 @@ public abstract class ColumnMeta {
 	}
 	public String getComment() {
 		return comment;
+	}
+	public boolean isCanUseForSplit() {
+		return canUseForSplit;
 	}
 }

@@ -20,7 +20,7 @@ public class PEnumColumnMeta extends ColumnMeta {
 	private Method method;
 	
 	public PEnumColumnMeta(Field field) {
-		super(field);
+		super(field, false);
 		Column column = field.getAnnotation(Column.class);
 		if(column != null) {
 			this.length = column.length();

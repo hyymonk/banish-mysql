@@ -15,7 +15,7 @@ import org.banish.sql.core.orm.ColumnMeta;
 public class PDoubleColumnMeta extends ColumnMeta {
 	
 	public PDoubleColumnMeta(Field field) {
-		super(field);
+		super(field, false);
 	}
 
 	@Override

@@ -15,7 +15,7 @@ import org.banish.sql.core.orm.ColumnMeta;
 public class PByteColumnMeta extends ColumnMeta {
 	
 	public PByteColumnMeta(Field field) {
-		super(field);
+		super(field, true);
 	}
 
 	@Override

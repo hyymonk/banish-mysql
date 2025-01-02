@@ -15,7 +15,7 @@ import org.banish.sql.core.orm.ColumnMeta;
 public class MByteColumnMeta extends ColumnMeta {
 	
 	public MByteColumnMeta(Field field) {
-		super(field);
+		super(field, true);
 	}
 
 	@Override

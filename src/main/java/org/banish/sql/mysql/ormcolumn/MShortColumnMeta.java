@@ -15,7 +15,7 @@ import org.banish.sql.core.orm.ColumnMeta;
 public class MShortColumnMeta extends ColumnMeta {
 	
 	public MShortColumnMeta(Field field) {
-		super(field);
+		super(field, true);
 	}
 
 	@Override

@@ -95,10 +95,10 @@ public class QuerySet {
 			where.append(" ").append(this.orderBy);
 		}
 		if (pageSize > 0) {
-			where.append(" limit ?, ?");
+			where.append(" limit ? offset ?");
+			params.add(pageSize);
 			int startIndex = (page - 1) * pageSize;
 			params.add(startIndex);
-			params.add(pageSize);
 		}
 		this.where = where.toString();
 		this.params = params.toArray();

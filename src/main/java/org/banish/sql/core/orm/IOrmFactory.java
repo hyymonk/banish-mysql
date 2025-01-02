@@ -25,4 +25,6 @@ public interface IOrmFactory {
 	ColumnMeta newColumnMeta(Field field);
 	
 	IPrimaryKeyColumnMeta newPrimaryKeyColumnMeta(Field field);
+	
+	String formatIndexName(String tableName, String[] fieldNames);
 }

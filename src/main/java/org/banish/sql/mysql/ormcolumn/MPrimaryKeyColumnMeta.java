@@ -25,7 +25,7 @@ public class MPrimaryKeyColumnMeta extends ColumnMeta implements IPrimaryKeyColu
 	private final long base;
 	
 	public MPrimaryKeyColumnMeta(Field field) {
-		super(field);
+		super(field, false);
 		Id id = field.getAnnotation(Id.class);
 		this.strategy = id.strategy();
 		this.base = id.autoBase();

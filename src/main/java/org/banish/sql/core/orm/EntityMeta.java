@@ -78,11 +78,11 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	 */
 	private final List<ColumnMeta> insertColumnList;
 	
-	private final IOrmFactory metaFactory;
+	private final IOrmFactory ormFactory;
 	
-	protected EntityMeta(Class<T> clazz, ITable table, IOrmFactory metaFactory) {
+	protected EntityMeta(Class<T> clazz, ITable table, IOrmFactory ormFactory) {
 		this.clazz = clazz;
-		this.metaFactory = metaFactory;
+		this.ormFactory = ormFactory;
 		if("".equals(table.name())) {
 			this.tableName = IEntityMeta.makeSnakeCase(clazz.getSimpleName());
 		} else {
@@ -107,7 +107,7 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 		this.columnMap = Collections.unmodifiableMap(columnNameMap);
 		this.fieldToColumn = Collections.unmodifiableMap(fieldToColumnMap);
 		//构建索引元数据
-		this.indexMap = Collections.unmodifiableMap(IndexMeta.build(clazz, table, this.tableName, this.fieldToColumn));
+		this.indexMap = Collections.unmodifiableMap(IndexMeta.build(clazz, table, this.tableName, this.fieldToColumn, ormFactory));
 		
 		List<ColumnMeta> insertColumnList = new ArrayList<>(allFields.size());
 		for(ColumnMeta columnMeta : this.columnList) {
@@ -140,13 +140,13 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
             ColumnMeta columnMeta = null;
             if(id != null) {
             	if(idMeta == null) {
-    				idMeta = metaFactory.newPrimaryKeyColumnMeta(field);
+    				idMeta = ormFactory.newPrimaryKeyColumnMeta(field);
     			} else {
     				throw new RuntimeException(field.getDeclaringClass().getSimpleName() + " @Id field more than one");
     			}
             	columnMeta = (ColumnMeta)idMeta;
             } else {
-            	columnMeta = metaFactory.newColumnMeta(field);
+            	columnMeta = ormFactory.newColumnMeta(field);
             }
             //构建数据库字段与对象属性关系
             columnList.add(columnMeta);

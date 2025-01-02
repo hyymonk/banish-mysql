@@ -15,7 +15,7 @@ import org.banish.sql.core.orm.ColumnMeta;
 public class PFloatColumnMeta extends ColumnMeta {
 	
 	public PFloatColumnMeta(Field field) {
-		super(field);
+		super(field, false);
 	}
 
 	@Override

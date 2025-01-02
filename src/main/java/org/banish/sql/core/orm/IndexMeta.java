@@ -70,9 +70,9 @@ public class IndexMeta {
 	}
 
 	public static Map<String, IndexMeta> build(Class<?> clazz, ITable table, String tableName,
-			Map<String, String> fieldToColumn) {
+			Map<String, String> fieldToColumn, IOrmFactory ormFactory) {
 		List<Index> allIndexes = new ArrayList<>();
-
+		
 		Class<?> currClazz = clazz;
 		while (currClazz != null) {
 			SuperIndex superIndex = currClazz.getAnnotation(SuperIndex.class);
@@ -91,10 +91,7 @@ public class IndexMeta {
 		Map<String, String> fieldsMap = new HashMap<>();
 		// 表注解上定义的索引
 		for (Index index : allIndexes) {
-			String indexName = "idx";
-			for (String fieldName : index.fields()) {
-				indexName += "_" + IEntityMeta.makeSnakeCase(fieldName);
-			}
+			String indexName = ormFactory.formatIndexName(tableName, index.fields());
 			if (indexMap.containsKey(indexName)) {
 				throw new RuntimeException("实体类[" + tableName + "]中名字为[" + indexName + "]的索引被重复定义");
 			}

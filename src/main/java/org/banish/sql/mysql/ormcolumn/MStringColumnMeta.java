@@ -18,16 +18,24 @@ public class MStringColumnMeta extends ColumnMeta {
 	private final String[] extra;
 	private final int length;
 	
-	public MStringColumnMeta(Field field) {
-		super(field);
+	protected MStringColumnMeta(Field field, boolean canUseForSplit) {
+		super(field, canUseForSplit);
 		Column column = field.getAnnotation(Column.class);
+		int length = 0;
 		if(column != null) {
 			this.extra = column.extra();
-			this.length = column.length();
+			length = column.length();
 		} else {
 			this.extra = new String[0];
-			this.length = 255;
 		}
+		if(length <= 0) {
+			length = 255;
+		}
+		this.length = length;
+	}
+	
+	public MStringColumnMeta(Field field) {
+		this(field, true);
 	}
 
 	@Override

@@ -20,7 +20,7 @@ public class PStructColumnMeta extends PStringColumnMeta {
 	private final String formatter;
 	
 	public PStructColumnMeta(Field field) {
-		super(field);
+		super(field, false);
 		Column column = field.getAnnotation(Column.class);
 		if("".equals(column.formatter())) {
 			this.formatter = "json";

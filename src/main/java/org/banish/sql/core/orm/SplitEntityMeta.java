@@ -14,14 +14,6 @@ import org.banish.sql.core.annotation.SplitTable;
 import org.banish.sql.core.annotation.enuma.SplitWay;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.tableinfo.SplitTableInfo;
-import org.banish.sql.mysql.ormcolumn.MByteColumnMeta;
-import org.banish.sql.mysql.ormcolumn.MDateColumnMeta;
-import org.banish.sql.mysql.ormcolumn.MIntegerColumnMeta;
-import org.banish.sql.mysql.ormcolumn.MLocalDateTimeColumnMeta;
-import org.banish.sql.mysql.ormcolumn.MLongColumnMeta;
-import org.banish.sql.mysql.ormcolumn.MLongTimeColumnMeta;
-import org.banish.sql.mysql.ormcolumn.MShortColumnMeta;
-import org.banish.sql.mysql.ormcolumn.MStringColumnMeta;
 
 /**
  * @author YY
@@ -56,36 +48,14 @@ public class SplitEntityMeta<T extends AbstractEntity> extends EntityMeta<T> {
 				throw new RuntimeException(
 						clazz.getSimpleName() + " can not find @TimeTable column named " + splitTable.byColumn());
 			}
-			if(this.splitWay == SplitWay.VALUE) {
-				if(splitingMeta instanceof MLongColumnMeta) {
-					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof MIntegerColumnMeta) {
-					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof MShortColumnMeta) {
-					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof MByteColumnMeta) {
-					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof MStringColumnMeta) {
-					this.splitMeta = splitingMeta;
-				} else {
-					throw new RuntimeException(String.format("实体类%s的字段%s无法作为分表的元数据", clazz.getSimpleName(), splitingMeta.getFieldName()));
-				}
-			} else if (this.splitWay == SplitWay.MINUTE || this.splitWay == SplitWay.HOUR
-					|| this.splitWay == SplitWay.DAY || this.splitWay == SplitWay.WEEK
-					|| this.splitWay == SplitWay.MONTH || this.splitWay == SplitWay.YEAR) {
-				if(splitingMeta instanceof MDateColumnMeta) {
-					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof MLocalDateTimeColumnMeta) {
-					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof MLongTimeColumnMeta) {
-					this.splitMeta = splitingMeta;
-				} else if(splitingMeta instanceof MLongColumnMeta) {
-					this.splitMeta = splitingMeta;
-				} else {
-					throw new RuntimeException(String.format("实体类%s的字段%s无法作为分表的元数据", clazz.getSimpleName(), splitingMeta.getFieldName()));
-				}
-			} else {
+			if(this.splitWay == SplitWay.NULL) {
 				this.splitMeta = null;
+			} else {
+				if(splitingMeta.isCanUseForSplit()) {
+					this.splitMeta = splitingMeta;
+				} else {
+					throw new RuntimeException(String.format("实体类%s的字段%s无法作为分表的元数据", clazz.getSimpleName(), splitingMeta.getFieldName()));
+				}
 			}
 		} else {
 			this.splitWay = SplitWay.NULL;

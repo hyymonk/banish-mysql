@@ -40,7 +40,6 @@ public class PostgreSqlDDL implements IDDL {
 			Dao.executeSql(dataSource, ddl);
 		}
 		logger.info(remark + ":" + ddl);
-		System.out.println(remark + ":" + ddl);
 	}
 	public void addDDLs(List<String> ddls, String remark) {
 		for(String ddl : ddls) {
