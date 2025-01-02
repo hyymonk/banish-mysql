@@ -63,7 +63,7 @@ public interface IDDL {
 	 * @param columnDefine
 	 * @return
 	 */
-	String getTableModifyColumn(String tableName, String columnName, String columnDefine);
+	String getTableModifyColumn(String tableName, String columnName, ColumnMeta columnMeta);
 	/**
 	 * 添加索引
 	 * @param tableName
@@ -111,4 +111,6 @@ public interface IDDL {
 	List<String> createAutoIncrement(String tableName, IPrimaryKeyColumnMeta primaryKey, long startWith);
 	
 	boolean hasAutoIncrement(String tableName, String primaryKeyName);
+	
+	boolean checkAutoIncrement(String tableName, IPrimaryKeyColumnMeta primaryKey);
 }

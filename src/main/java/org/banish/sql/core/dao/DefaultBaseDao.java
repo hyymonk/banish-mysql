@@ -244,9 +244,9 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 					t.setInsertTime(now);
 				}
 				t.setUpdateTime(now);
-				int offset = getEntityMeta().getColumnList().size() * j;
-				for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
-					ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);
+				int offset = getEntityMeta().getInsertColumnList().size() * j;
+				for(int i = 0; i < getEntityMeta().getInsertColumnList().size(); i++) {
+					ColumnMeta columnMeta = getEntityMeta().getInsertColumnList().get(i);
 					Object obj = columnMeta.takeValue(t);
 					statement.setObject(offset + i + 1, obj);
 				}

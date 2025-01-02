@@ -203,11 +203,11 @@ public class PostgreSqlDDL implements IDDL {
 	/**
 	 * 修改列属性
 	 */
-	private final String TABLE_MODIFY_COLUMN = "ALTER TABLE \"%s\" ALTER COLUMN \"%s\" TYPE %s;";
+	private final String TABLE_MODIFY_COLUMN = "ALTER TABLE \"%s\" ALTER COLUMN \"%s\" TYPE %s USING \"%s\";";
 	
 	@Override
-	public String getTableModifyColumn(String tableName, String columnName, String columnDefine) {
-		return String.format(TABLE_MODIFY_COLUMN, tableName, columnName, columnDefine);
+	public String getTableModifyColumn(String tableName, String columnName, ColumnMeta columnMeta) {
+		return String.format(TABLE_MODIFY_COLUMN, tableName, columnName, columnMeta.dbColumnType(), columnMeta.getColumnName());
 	}
 	
 //	CREATE UNIQUE INDEX "idx_grade_clazz" ON "public"."student" USING btree (
@@ -260,17 +260,38 @@ public class PostgreSqlDDL implements IDDL {
 		private long maxId;
 	}
 	
-//	 SELECT pg_get_serial_sequence('people3', 'id');
-//	 select currval('public.people3_id_seq'::regclass);
+//	 SELECT pg_get_serial_sequence('example', 'id');//只能查询出在创建表时就指定使用serial或者bigserial的序列
 	
+	/**
+	 * 查询自增序列的情况
+	 */
 	private final String TABLE_QUERY_SEQ = "SELECT sequencename,data_type,last_value FROM pg_sequences WHERE sequencename = ?;";
-	private final String TABLE_AUTOINC = "SELECT currval(\"%s\"::regclass);";
+	/**
+	 * 创建自增序列
+	 */
+	private final String CREATE_TABLE_SEQ = "CREATE SEQUENCE %s AS %s INCREMENT BY 1;";
+	/**
+	 * 将自增序列设置到自增主键上
+	 */
+	private final String SET_SEQ_TO_PRIMARYKEY = "ALTER TABLE \"%s\" ALTER COLUMN \"%s\" SET DEFAULT nextval('%s'::regclass);";
+	/**
+	 * 设置自增序列的下一个值
+	 */
+	private final String SET_AUTO_INCREMENT = "SELECT SETVAL('%s'::regclass, %s, false);";
+	/**
+	 * 丢弃旧序列
+	 */
+	private final String DROP_OLD_SEQ = "DROP SEQUENCE IF EXISTS %s;";
+	/**
+	 * 丢弃旧序列前要先将自增主键的默认值移除
+	 */
+	private final String DROP_PRIMARY_KEY_DEFAULT = "ALTER TABLE %s ALTER COLUMN %s DROP DEFAULT;";
 	
 	@Override
 	public long getTableAutoinc(String tableName, String primaryKeyName) {
 		String seqName = String.format("%s_%s_seq", tableName, primaryKeyName);
 		TableSeq tableSeq = Dao.queryAliasObject(dataSource, TableSeq.class, TABLE_QUERY_SEQ, seqName);
-		return tableSeq.lastValue;
+		return tableSeq.lastValue + 1;
 	}
 	
 	@Override
@@ -279,11 +300,6 @@ public class PostgreSqlDDL implements IDDL {
 		TableSeq tableSeq = Dao.queryAliasObject(dataSource, TableSeq.class, TABLE_QUERY_SEQ, seqName);
 		return tableSeq != null && tableSeq.name != null;
 	}
-	
-//	public static class TableStatus {
-//		@Column(name = "currval", comment = "自动增长ID")
-//		private long autoIncrement;
-//	}
 	
 	public static class TableSeq {
 		@Column(name = "sequencename", comment = "序列名字")
@@ -295,12 +311,6 @@ public class PostgreSqlDDL implements IDDL {
 		
 	}
 	
-	
-//	 select * from pg_sequences;
-	private final String CREATE_TABLE_SEQ = "CREATE SEQUENCE %s AS %s INCREMENT BY 1;";
-	
-	private final String SET_SEQ_TO_PRIMARYKEY = "ALTER TABLE \"%s\" ALTER COLUMN \"%s\" SET DEFAULT nextval('%s'::regclass);";
-	
 	@Override
 	public List<String> createAutoIncrement(String tableName, IPrimaryKeyColumnMeta primaryKey, long startWith) {
 		String seqName = String.format("%s_%s_seq", tableName, primaryKey.getColumnName());
@@ -311,23 +321,40 @@ public class PostgreSqlDDL implements IDDL {
 			sql = String.format(CREATE_TABLE_SEQ, seqName, "bigint", startWith);
 		}
 		List<String> results = new ArrayList<>();
+		results.add(String.format(DROP_PRIMARY_KEY_DEFAULT, tableName, primaryKey.getColumnName()));
+		results.add(String.format(DROP_OLD_SEQ, seqName));
 		results.add(sql);
 		String setSeq = String.format(SET_SEQ_TO_PRIMARYKEY, tableName, primaryKey.getColumnName(), seqName);
 		results.add(setSeq);
 		results.add(String.format(SET_AUTO_INCREMENT, seqName, startWith));
 		return results;
 	}
-	
-	/**
-	 * 设置自增ID
-	 */
-	private final String SET_AUTO_INCREMENT = "SELECT SETVAL('%s'::regclass, %s);";
 
 	@Override
 	public String setAutoIncrement(String tableName, String primaryKeyName, long autoinc) {
 		String seqName = String.format("%s_%s_seq", tableName, primaryKeyName);
 		return String.format(SET_AUTO_INCREMENT, seqName, autoinc);
 	}
+	
+	/**
+	 * 自增序列是否发生了变化
+	 * @param tableName
+	 * @param primaryKey
+	 * @return
+	 */
+	public boolean checkAutoIncrement(String tableName, IPrimaryKeyColumnMeta primaryKey) {
+		String seqName = String.format("%s_%s_seq", tableName, primaryKey.getColumnName());
+		TableSeq tableSeq = Dao.queryAliasObject(dataSource, TableSeq.class, TABLE_QUERY_SEQ, seqName);
+		
+		if(tableSeq.dataType.equals("integer") && (primaryKey.getField().getType() == int.class || primaryKey.getField().getType() == Integer.class)) {
+			return false;
+		} else if(tableSeq.dataType.equals("bigint") && (primaryKey.getField().getType() == long.class || primaryKey.getField().getType() == Long.class)) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
 
 	@Override
 	public List<String> createTableSql(String tableName, EntityMeta<?> entityMeta) {
@@ -357,27 +384,7 @@ public class PostgreSqlDDL implements IDDL {
 	
 	@Override
 	public String getColumnDefine(ColumnMeta columnMeta) {
-		
 //		COMMENT ON COLUMN "public"."Untitled"."name" IS 'mingzi';
-		
-		StringBuilder result = new StringBuilder();
-		result.append(String.format("\"%s\" %s", columnMeta.getColumnName(), columnMeta.dbColumnType()));
-		String autoIncrement = "";
-		if(columnMeta instanceof IPrimaryKeyColumnMeta) {
-			result.append(" NOT NULL ");
-			
-//			IPrimaryKeyColumnMeta keyMeta = (IPrimaryKeyColumnMeta)columnMeta;
-//			if(keyMeta.getStrategy() == Strategy.AUTO) {
-//				autoIncrement = "AUTO_INCREMENT";
-//			} else {
-//				
-//			}
-		} else {
-			
-		}
-		result.append(" ").append(columnMeta.defaultValue());
-		// 字段备注
-//		result.append(" COMMENT '").append(columnMeta.getComment()).append("'");
-		return result.toString();
+		return String.format("\"%s\" %s %s", columnMeta.getColumnName(), columnMeta.dbColumnType(), columnMeta.defaultValue());
 	}
 }

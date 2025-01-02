@@ -172,8 +172,8 @@ public class MySqlDDL implements IDDL {
 	private final String TABLE_MODIFY_COLUMN = "ALTER TABLE `%s` CHANGE COLUMN `%s` %s;";
 	
 	@Override
-	public String getTableModifyColumn(String tableName, String columnName, String columnDefine) {
-		return String.format(TABLE_MODIFY_COLUMN, tableName, columnName, columnDefine);
+	public String getTableModifyColumn(String tableName, String columnName, ColumnMeta columnMeta) {
+		return String.format(TABLE_MODIFY_COLUMN, tableName, columnName, this.getColumnDefine(columnMeta));
 	}
 	
 	/**
@@ -323,5 +323,10 @@ public class MySqlDDL implements IDDL {
 	@Override
 	public boolean hasAutoIncrement(String tableName, String primaryKeyName) {
 		return true;
+	}
+
+	@Override
+	public boolean checkAutoIncrement(String tableName, IPrimaryKeyColumnMeta primaryKey) {
+		return false;
 	}
 }

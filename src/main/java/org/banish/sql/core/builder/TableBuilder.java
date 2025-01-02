@@ -122,7 +122,7 @@ public class TableBuilder {
 					continue;
 				}
 				// 修改列
-				String ddlSql = iddl.getTableModifyColumn(tableName, entry.getKey(), iddl.getColumnDefine(columnMeta));
+				String ddlSql = iddl.getTableModifyColumn(tableName, entry.getKey(), columnMeta);
 				iddl.addDDL(ddlSql, "数据库DDL修改列");
 			}
 		}
@@ -217,8 +217,7 @@ public class TableBuilder {
 				logger.info("currAutoId:{}, currMaxId:{}, customInitId:{}, finalMaxId:{}", 0, 0, customInitId, customInitId);
 				iddl.addDDLs(ddlSqls, "数据库DDL新增自增ID");
 			} else {
-				//TODO 检查序列是否一致
-				
+				//TODO 判断自增序列的类型是否不变
 				
 				//当前表中定义的自增主键
 				long currAutoId = iddl.getTableAutoinc(tableName, keyMeta.getColumnName());
@@ -238,10 +237,17 @@ public class TableBuilder {
 				if(customInitId > finalMaxId) {
 					finalMaxId = customInitId;
 				}
-				if(finalMaxId > currAutoId) {
-					String ddlSql = iddl.setAutoIncrement(tableName, keyMeta.getColumnName(), finalMaxId);
+				
+				if(iddl.checkAutoIncrement(tableName, keyMeta)) {
+					List<String> ddlSqls = iddl.createAutoIncrement(tableName, keyMeta, finalMaxId);
 					logger.info("currAutoId:{}, currMaxId:{}, customInitId:{}, finalMaxId:{}", currAutoId, currMaxId, customInitId, finalMaxId);
-					iddl.addDDL(ddlSql, "数据库DDL修改自增ID");
+					iddl.addDDLs(ddlSqls, "数据库DDL变更自增ID");
+				} else {
+					if(finalMaxId > currAutoId) {
+						String ddlSql = iddl.setAutoIncrement(tableName, keyMeta.getColumnName(), finalMaxId);
+						logger.info("currAutoId:{}, currMaxId:{}, customInitId:{}, finalMaxId:{}", currAutoId, currMaxId, customInitId, finalMaxId);
+						iddl.addDDL(ddlSql, "数据库DDL修改自增ID");
+					}
 				}
 			}
 		} else {

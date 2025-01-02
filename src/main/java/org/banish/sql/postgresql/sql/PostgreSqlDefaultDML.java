@@ -4,9 +4,11 @@
 package org.banish.sql.postgresql.sql;
 
 
+import org.banish.sql.core.annotation.enuma.IndexType;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.ColumnMeta;
 import org.banish.sql.core.orm.EntityMeta;
+import org.banish.sql.core.orm.IndexMeta;
 import org.banish.sql.core.sql.DefaultDML;
 
 /**
@@ -19,15 +21,25 @@ public class PostgreSqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T
 		super(entityMeta);
 	}
 
+	/**
+	 * PostgreSql使用insertUpdate特性后会导致自增序列发生跳跃，需谨慎使用
+	 */
 	public String insertUpdate(EntityMeta<T> entityMeta, int dataCount) {
+		IndexMeta uniqueIndex = null;
+		for(IndexMeta indexMeta : entityMeta.getIndexMap().values()) {
+			if(indexMeta.getType() == IndexType.UNIQUE) {
+				uniqueIndex = indexMeta;
+				break;
+			}
+		}
 		StringBuilder sql = new StringBuilder();
-		sql.append(String.format("INSERT INTO `%s` (", TABLE_NAME));
+		sql.append(String.format("INSERT INTO \"%s\" (", TABLE_NAME));
 		boolean isFirst = true;
-		for(ColumnMeta column : entityMeta.getColumnList()) {
+		for(ColumnMeta column : entityMeta.getInsertColumnList()) {
 			if(!isFirst) {
 				sql.append(",");
 			}
-			sql.append(String.format("`%s`", column.getColumnName()));
+			sql.append(String.format("\"%s\"", column.getColumnName()));
 			isFirst = false;
 		}
 		sql.append(") VALUES ");
@@ -40,7 +52,7 @@ public class PostgreSqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T
 			
 			boolean firstColumn = true;
 			sql.append("(");
-			for(int i = 0; i < entityMeta.getColumnList().size(); i++) {
+			for(int i = 0; i < entityMeta.getInsertColumnList().size(); i++) {
 				if(!firstColumn) {
 					sql.append(",");
 				}
@@ -51,12 +63,15 @@ public class PostgreSqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T
 			
 			isFirst = false;
 		}
-		sql.append(" ON DUPLICATE KEY UPDATE ");
+		
+		if(uniqueIndex != null) {
+			sql.append(String.format(" ON CONFLICT (%s) DO UPDATE SET ", uniqueIndex.getColumnsString(this.dot())));
+		} else {
+			sql.append(String.format(" ON CONFLICT (%s) DO UPDATE SET ", entityMeta.getPrimaryKeyMeta().getColumnName()));
+		}
+		
 		isFirst = true;
-		for (ColumnMeta columnMeta : entityMeta.getColumnList()) {
-			if (columnMeta == entityMeta.getPrimaryKeyMeta()) {
-				continue;
-			}
+		for (ColumnMeta columnMeta : entityMeta.getInsertColumnList()) {
 			if(columnMeta.isReadonly()) {
 				continue;
 			}
@@ -64,7 +79,7 @@ public class PostgreSqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T
 				sql.append(",");
 			}
 			isFirst = false;
-			sql.append(String.format("`%s`= VALUES(%s)", columnMeta.getColumnName(), columnMeta.getColumnName()));
+			sql.append(String.format("\"%s\"= EXCLUDED.\"%s\"", columnMeta.getColumnName(), columnMeta.getColumnName()));
 		}
 		return sql.toString();
 	}

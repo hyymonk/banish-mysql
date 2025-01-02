@@ -8,12 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.banish.sql.core.annotation.Column;
 import org.banish.sql.core.annotation.Id;
+import org.banish.sql.core.annotation.Id.Strategy;
 import org.banish.sql.core.annotation.Index;
 import org.banish.sql.core.annotation.Table;
-import org.banish.sql.core.annotation.Id.Strategy;
 import org.banish.sql.core.annotation.enuma.IndexType;
 import org.banish.sql.core.entity.AbstractEntity;
 
@@ -26,7 +27,7 @@ import org.banish.sql.core.entity.AbstractEntity;
 public class ExampleEntity extends AbstractEntity {
 	@Id(strategy = Strategy.AUTO)
 	@Column(comment = "唯一ID")
-	private long id;
+	private int id;
 	@Column(comment = "身份ID", readonly = true)
 	private String cardId;
 	@Column(comment = "名字")
@@ -63,6 +64,50 @@ public class ExampleEntity extends AbstractEntity {
 	private boolean alive;
 	@Column(comment = "国际")
 	private Country country = Country.CHINA;
+	
+	
+	public static ExampleEntity createExample() {
+		ExampleEntity exampleEntity = new ExampleEntity();
+		exampleEntity.setCardId(UUID.randomUUID().toString());
+		exampleEntity.setName("Tom");
+		exampleEntity.setSex((byte)1);
+		exampleEntity.setAge((short)35);
+		exampleEntity.setProvinceCode(100001);
+		exampleEntity.setCityCode(100001);
+		exampleEntity.setMoney(98765432123456789L);
+		exampleEntity.setAddress("some where");
+		exampleEntity.setBornTime(System.currentTimeMillis());
+		exampleEntity.setDescribe("secret");
+		exampleEntity.getHobbise().add("game");
+		exampleEntity.getHobbise().add("swim");
+		
+		EducationInfo edu1 = new EducationInfo();
+		edu1.setSchoolName("school1");
+		edu1.setYear(2000);
+		exampleEntity.getEducationInfos().add(edu1);
+		EducationInfo edu2 = new EducationInfo();
+		edu2.setSchoolName("school2");
+		edu2.setYear(2010);
+		exampleEntity.getEducationInfos().add(edu2);
+		
+		BankCard bankCard1 = new BankCard();
+		bankCard1.setCardCode("A1");
+		bankCard1.setBankName("Bank 1");
+		bankCard1.setExpireTime(System.currentTimeMillis());
+		exampleEntity.getBankCards().put(bankCard1.getCardCode(), bankCard1);
+		BankCard bankCard2 = new BankCard();
+		bankCard2.setCardCode("A2");
+		bankCard2.setBankName("Bank 2");
+		bankCard2.setExpireTime(System.currentTimeMillis());
+		exampleEntity.getBankCards().put(bankCard2.getCardCode(), bankCard2);
+		
+		exampleEntity.setLastPay(12.12f);
+		exampleEntity.setDailyPay(100.100d);
+		exampleEntity.setHisPay(new BigDecimal("78945.4785125"));
+		exampleEntity.setAlive(true);
+		exampleEntity.setCountry(Country.CHINA);
+		return exampleEntity;
+	}
 	
 	public static class EducationInfo {
 		private String schoolName;
@@ -111,13 +156,13 @@ public class ExampleEntity extends AbstractEntity {
 		ENGLAND,
 	}
 
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
+//	public long getId() {
+//		return id;
+//	}
+//
+//	public void setId(long id) {
+//		this.id = id;
+//	}
 
 	public String getCardId() {
 		return cardId;
