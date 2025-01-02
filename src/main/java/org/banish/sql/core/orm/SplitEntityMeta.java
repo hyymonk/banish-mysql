@@ -14,14 +14,14 @@ import org.banish.sql.core.annotation.SplitTable;
 import org.banish.sql.core.annotation.enuma.SplitWay;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.tableinfo.SplitTableInfo;
-import org.banish.sql.mysql.orm.column.MByteColumnMeta;
-import org.banish.sql.mysql.orm.column.MDateColumnMeta;
-import org.banish.sql.mysql.orm.column.MIntegerColumnMeta;
-import org.banish.sql.mysql.orm.column.MLocalDateTimeColumnMeta;
-import org.banish.sql.mysql.orm.column.MLongColumnMeta;
-import org.banish.sql.mysql.orm.column.MLongTimeColumnMeta;
-import org.banish.sql.mysql.orm.column.MShortColumnMeta;
-import org.banish.sql.mysql.orm.column.MStringColumnMeta;
+import org.banish.sql.mysql.ormcolumn.MByteColumnMeta;
+import org.banish.sql.mysql.ormcolumn.MDateColumnMeta;
+import org.banish.sql.mysql.ormcolumn.MIntegerColumnMeta;
+import org.banish.sql.mysql.ormcolumn.MLocalDateTimeColumnMeta;
+import org.banish.sql.mysql.ormcolumn.MLongColumnMeta;
+import org.banish.sql.mysql.ormcolumn.MLongTimeColumnMeta;
+import org.banish.sql.mysql.ormcolumn.MShortColumnMeta;
+import org.banish.sql.mysql.ormcolumn.MStringColumnMeta;
 
 /**
  * @author YY

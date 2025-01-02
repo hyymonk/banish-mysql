@@ -16,7 +16,7 @@ import org.banish.sql.core.orm.EntityMeta;
 import org.banish.sql.core.orm.IPrimaryKeyColumnMeta;
 import org.banish.sql.core.orm.IndexMeta;
 import org.banish.sql.core.sql.IDDL;
-import org.banish.sql.mysql.orm.column.MPrimaryKeyColumnMeta;
+import org.banish.sql.mysql.ormcolumn.MPrimaryKeyColumnMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
