@@ -28,6 +28,9 @@ public class PostgreSqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T
 
 	/**
 	 * PostgreSql使用insertUpdate特性后会导致自增序列发生跳跃，需谨慎使用
+	 * 并且在使用insertUpdate时需要确保数据列表中同一个唯一约束的数据只有一条，
+	 * 不可更新成功的数据列表[example(id=【1】,name=A),example(id=【1】,name=B)]
+	 * 可以更新成功的数据列表[example(id=【1】,name=A),example(id=【2】,name=B)]
 	 */
 	public String insertUpdate(EntityMeta<T> entityMeta, int dataCount) {
 		IndexMeta uniqueIndex = null;
