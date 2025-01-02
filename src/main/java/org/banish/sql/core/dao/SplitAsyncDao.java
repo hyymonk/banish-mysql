@@ -1,35 +1,30 @@
 /**
  * 
  */
-package org.banish.sql.mysql.dao;
+package org.banish.sql.core.dao;
 
 import java.util.List;
 
-import org.banish.sql.core.annotation.enuma.UpdateType;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.ColumnMeta;
-import org.banish.sql.core.orm.DefaultAsyncEntityMeta;
 import org.banish.sql.core.orm.IAsyncEntityMeta;
+import org.banish.sql.core.orm.SplitAsyncEntityMeta;
 
 /**
  * @author YY
  *
  */
-public class DefaultAsyncDao<T extends AbstractEntity> extends DefaultBaseDao<T> implements IAsyncDao<T> {
-	
+public class SplitAsyncDao<T extends AbstractEntity> extends SplitBaseDao<T> implements IAsyncDao<T> {
+
 	private IAsyncEntityMeta asyncMeta;
 	
 	private AsyncDaoPlugin<T> asyncDaoPlugin;
 	
-	public DefaultAsyncDao(IDataSource dataSource, DefaultAsyncEntityMeta<T> entityMeta) {
+	public SplitAsyncDao(IDataSource dataSource, SplitAsyncEntityMeta<T> entityMeta) {
 		super(dataSource, entityMeta);
 		this.asyncMeta = entityMeta;
-		if(entityMeta.getUpdateType() == UpdateType.UPDATE) {
-			this.asyncDaoPlugin = new AsyncDaoPlugin<T>(this);
-		} else {
-			this.asyncDaoPlugin = new AsyncDaoFastPlugin<T>(this);
-		}
+		this.asyncDaoPlugin = new AsyncDaoPlugin<T>(this);
 	}
 
 	@Override
@@ -41,22 +36,22 @@ public class DefaultAsyncDao<T extends AbstractEntity> extends DefaultBaseDao<T>
 	public void insertAllNow(List<T> ts) {
 		super.insertAll(ts);
 	}
-	
+
 	@Override
 	public void updateNow(T t) {
 		super.update(t);
 	}
-
+	
 	@Override
 	public void updateAllNow(List<T> ts) {
 		super.updateAll(ts);
 	}
-
+	
 	@Override
 	public IAsyncEntityMeta getAsyncMeta() {
 		return asyncMeta;
 	}
-
+	
 	@Override
 	public AsyncDaoPlugin<T> getAsyncPlugin() {
 		return asyncDaoPlugin;
@@ -81,7 +76,7 @@ public class DefaultAsyncDao<T extends AbstractEntity> extends DefaultBaseDao<T>
 	public void updateAll(List<T> ts) {
 		getAsyncPlugin().updateAll(ts);
 	}
-
+	
 	@Override
 	public Object[] getValues(T t) {
 		Object[] values = new Object[this.getEntityMeta().getColumnList().size()];
@@ -97,6 +92,6 @@ public class DefaultAsyncDao<T extends AbstractEntity> extends DefaultBaseDao<T>
 
 	@Override
 	public void fastUpdateAllNow(List<T> ts) {
-		super.insertUpdate(ts);
+		super.updateAll(ts);
 	}
 }

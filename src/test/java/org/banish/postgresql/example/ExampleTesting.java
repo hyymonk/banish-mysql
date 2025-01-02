@@ -80,7 +80,7 @@ public class ExampleTesting {
 		
 		Daos.get(1, ExampleEntity.class).insert(exampleEntity);
 		
-		ExampleEntity queryResult = Daos.get(1, ExampleEntity.class).queryByPrimaryKey(1000000001);
-		System.out.println(JsonFormatter.gson.toJson(queryResult));
+		ExampleEntity queryResult = Daos.get(1, ExampleEntity.class).queryByPrimaryKey(1000000002);
+		System.out.println("ExampleEntity " + JsonFormatter.gson.toJson(queryResult));
 	}
 }

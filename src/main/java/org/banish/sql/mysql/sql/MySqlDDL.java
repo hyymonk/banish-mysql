@@ -1,20 +1,21 @@
 /**
  * 
  */
-package org.banish.sql.mysql.table.ddl;
+package org.banish.sql.mysql.sql;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.banish.sql.core.annotation.Column;
 import org.banish.sql.core.annotation.Id.Strategy;
+import org.banish.sql.core.dao.Dao;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.orm.ColumnMeta;
 import org.banish.sql.core.orm.EntityMeta;
 import org.banish.sql.core.orm.IPrimaryKeyColumnMeta;
 import org.banish.sql.core.orm.IndexMeta;
 import org.banish.sql.core.sql.IDDL;
-import org.banish.sql.mysql.dao.Dao;
 import org.banish.sql.mysql.orm.column.MPrimaryKeyColumnMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,9 +28,9 @@ public class MySqlDDL implements IDDL {
 	
 	private static Logger logger = LoggerFactory.getLogger(MySqlDDL.class);
 	
-	private IDataSource dataSource;
-	private boolean autoBuild;
-	private List<String> ddlSqls = new ArrayList<>();
+	private final IDataSource dataSource;
+	private final boolean autoBuild;
+	private final List<String> ddlSqls = new ArrayList<>();
 	
 	public MySqlDDL(IDataSource dataSource, boolean autoBuild) {
 		this.dataSource = dataSource;
@@ -183,7 +184,7 @@ public class MySqlDDL implements IDDL {
 	@Override
 	public String getTableAddIndex(String tableName, IndexMeta indexMeta) {
 		return String.format(TABLE_ADD_INDEX, tableName, indexMeta.getType().value(), indexMeta.getName(),
-				indexMeta.getColumnsString(), indexMeta.getWay().value());
+				indexMeta.getColumnsString("`"), indexMeta.getWay().value());
 	}
 	
 	/**
@@ -194,7 +195,7 @@ public class MySqlDDL implements IDDL {
 	@Override
 	public String getTableModifyIndex(String tableName, IndexMeta indexMeta) {
 		return String.format(TABLE_MODIFY_INDEX, tableName, indexMeta.getName(), indexMeta.getType().value(), indexMeta.getName(),
-				indexMeta.getColumnsString(), indexMeta.getWay().value());
+				indexMeta.getColumnsString("`"), indexMeta.getWay().value());
 	}
 	
 	/**
@@ -221,7 +222,7 @@ public class MySqlDDL implements IDDL {
 	private final String SET_AUTO_INCREMENT = "ALTER TABLE `%s` AUTO_INCREMENT=%s;";
 
 	@Override
-	public String setAutoIncrement(String tableName, long autoinc) {
+	public String setAutoIncrement(String tableName, String primaryKeyName, long autoinc) {
 		return String.format(SET_AUTO_INCREMENT, tableName, autoinc);
 	}
 	
@@ -267,7 +268,7 @@ public class MySqlDDL implements IDDL {
 	}
 
 	@Override
-	public long getTableAutoinc(String tableName) {
+	public long getTableAutoinc(String tableName, String primaryKeyName) {
 		String mysqlVersion = getMysqlVersion();
 		long currAutoId = 0;
 		if(mysqlVersion.startsWith("8")) {
@@ -279,7 +280,7 @@ public class MySqlDDL implements IDDL {
 	}
 	
 	@Override
-	public String createTableSql(String tableName, EntityMeta<?> entityMeta) {
+	public List<String> createTableSql(String tableName, EntityMeta<?> entityMeta) {
 		StringBuilder result = new StringBuilder();
 		result.append(String.format("CREATE TABLE `%s` (", tableName));
 		
@@ -293,7 +294,7 @@ public class MySqlDDL implements IDDL {
 		//这里并没有对自增ID进行初始处理，自增ID的设置会在表构建好之后进行处理
 		result.append(") ENGINE=InnoDB DEFAULT CHARSET=").append(entityMeta.getTableCharset().value());
 		result.append(" COMMENT='").append(entityMeta.getTableComment()).append("';");
-		return result.toString();
+		return Collections.singletonList(result.toString());
 	}
 	
 	@Override
@@ -311,5 +312,16 @@ public class MySqlDDL implements IDDL {
 		// 字段备注
 		result.append(" COMMENT '").append(columnMeta.getComment()).append("'");
 		return result.toString();
+	}
+
+	@Override
+	public List<String> createAutoIncrement(String tableName, IPrimaryKeyColumnMeta primaryKey, long startWith) {
+		String sql = this.setAutoIncrement(tableName, tableName, startWith);
+		return Collections.singletonList(sql);
+	}
+
+	@Override
+	public boolean hasAutoIncrement(String tableName, String primaryKeyName) {
+		return true;
 	}
 }

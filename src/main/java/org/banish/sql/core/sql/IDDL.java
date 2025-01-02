@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.banish.sql.core.orm.ColumnMeta;
 import org.banish.sql.core.orm.EntityMeta;
+import org.banish.sql.core.orm.IPrimaryKeyColumnMeta;
 import org.banish.sql.core.orm.IndexMeta;
 
 /**
@@ -18,7 +19,7 @@ public interface IDDL {
 	void addDDL(String ddl, String remark);
 	void addDDLs(List<String> ddls, String remark);
 	
-	String createTableSql(String tableName, EntityMeta<?> entityMeta);
+	List<String> createTableSql(String tableName, EntityMeta<?> entityMeta);
 	
 	String getColumnDefine(ColumnMeta columnMeta);
 	
@@ -92,12 +93,22 @@ public interface IDDL {
 	 * @param tableName
 	 * @return
 	 */
-	long getTableAutoinc(String tableName);
+	long getTableAutoinc(String tableName, String primaryKeyName);
 	/**
 	 * 设置表的自增序列值
 	 * @param tableName
 	 * @param autoinc
 	 * @return
 	 */
-	String setAutoIncrement(String tableName, long autoinc);
+	String setAutoIncrement(String tableName, String primaryKeyName, long autoinc);
+	/**
+	 * 创建自增序列
+	 * @param tableName
+	 * @param primaryKey
+	 * @param startWith
+	 * @return
+	 */
+	List<String> createAutoIncrement(String tableName, IPrimaryKeyColumnMeta primaryKey, long startWith);
+	
+	boolean hasAutoIncrement(String tableName, String primaryKeyName);
 }

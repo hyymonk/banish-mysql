@@ -1,21 +1,20 @@
 /**
  * 
  */
-package org.banish.sql.postgresql.table;
+package org.banish.sql.postgresql.sql;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.banish.sql.core.annotation.Column;
-import org.banish.sql.core.annotation.Id.Strategy;
+import org.banish.sql.core.annotation.enuma.IndexType;
+import org.banish.sql.core.dao.Dao;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.orm.ColumnMeta;
 import org.banish.sql.core.orm.EntityMeta;
 import org.banish.sql.core.orm.IPrimaryKeyColumnMeta;
 import org.banish.sql.core.orm.IndexMeta;
 import org.banish.sql.core.sql.IDDL;
-import org.banish.sql.mysql.dao.Dao;
-import org.banish.sql.mysql.orm.column.MPrimaryKeyColumnMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,15 +25,22 @@ public class PostgreSqlDDL implements IDDL {
 	
 	private static Logger logger = LoggerFactory.getLogger(PostgreSqlDDL.class);
 	
-	private IDataSource dataSource;
-	private boolean autoBuild;
-	private List<String> ddlSqls = new ArrayList<>();
+	private final IDataSource dataSource;
+	private final boolean autoBuild;
+	private final List<String> ddlSqls = new ArrayList<>();
+	
+	public PostgreSqlDDL(IDataSource dataSource, boolean autoBuild) {
+		this.dataSource = dataSource;
+		this.autoBuild = autoBuild;
+	}
+	
 	public void addDDL(String ddl, String remark) {
 		ddlSqls.add(ddl);
 		if(autoBuild) {
 			Dao.executeSql(dataSource, ddl);
 		}
 		logger.info(remark + ":" + ddl);
+		System.out.println(remark + ":" + ddl);
 	}
 	public void addDDLs(List<String> ddls, String remark) {
 		for(String ddl : ddls) {
@@ -46,7 +52,7 @@ public class PostgreSqlDDL implements IDDL {
 	}
 	
 	
-	private final String SELECT_TABLE_NAME = "SELECT \"table_name\" FROM \"information_schema\".\"tables\" WHERE \"table_schema\"=? AND \"table_name\"=?;";
+	private final String SELECT_TABLE_NAME = "SELECT \"table_name\" FROM \"information_schema\".\"tables\" WHERE \"table_catalog\"=? AND \"table_name\"=?;";
 
 	@Override
 	public boolean isTableExist(String tableName) {
@@ -72,6 +78,7 @@ public class PostgreSqlDDL implements IDDL {
 			+ "	clz.relname,"
 			+ "	atr.attrelid,"
 			+ "	atr.attname,"
+			+ "	atr.attnum,"
 			+ "	am.amname "
 			+ "FROM"
 			+ "	pg_index idx"
@@ -79,12 +86,13 @@ public class PostgreSqlDDL implements IDDL {
 			+ "	JOIN pg_attribute atr ON atr.attrelid = idx.indexrelid"
 			+ "	JOIN pg_am am ON clz.relam = am.oid "
 			+ "WHERE"
-			+ "	indrelid = ( SELECT oid FROM pg_class WHERE relname = ? )";
+			+ "	indrelid = ( SELECT oid FROM pg_class WHERE relname = ? ) "
+			+ "ORDER BY"
+			+ " atr.attnum";
 	
 	@Override
 	public List<? extends IIndexStruct> getKeys(String tableName) {
-		String sql = String.format(SHOW_KEYS, tableName);
-		return Dao.queryAliasObjects(dataSource, IndexStruct.class, sql);
+		return Dao.queryAliasObjects(dataSource, IndexStruct.class, SHOW_KEYS, tableName);
 	}
 	
 	public static class IndexStruct implements IIndexStruct {
@@ -210,12 +218,18 @@ public class PostgreSqlDDL implements IDDL {
 	/**
 	 * 增加索引
 	 */
-	private final String TABLE_ADD_INDEX = "CREATE \"%s\" INDEX \"%s\" ON \"%s\" USING %s (%s);";
+	private final String TABLE_ADD_INDEX = "CREATE INDEX \"%s\" ON \"%s\" USING %s (%s);";
+	private final String TABLE_ADD_UNIQUE_INDEX = "CREATE UNIQUE INDEX \"%s\" ON \"%s\" USING %s (%s);";
 	
 	@Override
 	public String getTableAddIndex(String tableName, IndexMeta indexMeta) {
-		return String.format(TABLE_ADD_INDEX, indexMeta.getType().value(), indexMeta.getName(), tableName,
-				indexMeta.getWay().value(), indexMeta.getColumnsString());
+		if(indexMeta.getType() == IndexType.UNIQUE) {
+			return String.format(TABLE_ADD_UNIQUE_INDEX, indexMeta.getName(), tableName,
+					indexMeta.getWay().value(), indexMeta.getColumnsString("\""));
+		} else {
+			return String.format(TABLE_ADD_INDEX, indexMeta.getName(), tableName,
+					indexMeta.getWay().value(), indexMeta.getColumnsString("\""));
+		}
 	}
 	
 	/**
@@ -232,7 +246,7 @@ public class PostgreSqlDDL implements IDDL {
 	/**
 	 * 查询最大ID
 	 */
-	private final String SELECT_MAX_ID = "SELECT max(`%s`) as max_id FROM `%s` LIMIT 1;";
+	private final String SELECT_MAX_ID = "SELECT max(\"%s\") as max_id FROM \"%s\" LIMIT 1;";
 	
 	@Override
 	public long getTableMaxId(String tableName, String primaryKeyName) {
@@ -241,36 +255,82 @@ public class PostgreSqlDDL implements IDDL {
 		return tableMaxId.maxId;
 	} 
 	
-	public class TableMaxId {
-		@Column(comment = "表的最大ID")
+	public static class TableMaxId {
+		@Column(name = "max_id", comment = "表的最大ID")
 		private long maxId;
 	}
 	
+//	 SELECT pg_get_serial_sequence('people3', 'id');
+//	 select currval('public.people3_id_seq'::regclass);
+	
+	private final String TABLE_QUERY_SEQ = "SELECT sequencename,data_type,last_value FROM pg_sequences WHERE sequencename = ?;";
 	private final String TABLE_AUTOINC = "SELECT currval(\"%s\"::regclass);";
 	
 	@Override
-	public long getTableAutoinc(String tableName) {
-		TableStatus tableStatus = Dao.queryAliasObject(dataSource, TableStatus.class, TABLE_AUTOINC, dataSource.getDbName(), tableName);
-		return tableStatus.autoIncrement;
+	public long getTableAutoinc(String tableName, String primaryKeyName) {
+		String seqName = String.format("%s_%s_seq", tableName, primaryKeyName);
+		TableSeq tableSeq = Dao.queryAliasObject(dataSource, TableSeq.class, TABLE_QUERY_SEQ, seqName);
+		return tableSeq.lastValue;
 	}
 	
-	public class TableStatus {
-		@Column(name = "currval", comment = "自动增长ID")
-		private long autoIncrement;
+	@Override
+	public boolean hasAutoIncrement(String tableName, String primaryKeyName) {
+		String seqName = String.format("%s_%s_seq", tableName, primaryKeyName);
+		TableSeq tableSeq = Dao.queryAliasObject(dataSource, TableSeq.class, TABLE_QUERY_SEQ, seqName);
+		return tableSeq != null && tableSeq.name != null;
+	}
+	
+//	public static class TableStatus {
+//		@Column(name = "currval", comment = "自动增长ID")
+//		private long autoIncrement;
+//	}
+	
+	public static class TableSeq {
+		@Column(name = "sequencename", comment = "序列名字")
+		private String name;
+		@Column(name = "data_type", comment = "序列的数据类型")
+		private String dataType;
+		@Column(name = "last_value", comment = "最后的记录值")
+		private long lastValue;
+		
+	}
+	
+	
+//	 select * from pg_sequences;
+	private final String CREATE_TABLE_SEQ = "CREATE SEQUENCE %s AS %s INCREMENT BY 1;";
+	
+	private final String SET_SEQ_TO_PRIMARYKEY = "ALTER TABLE \"%s\" ALTER COLUMN \"%s\" SET DEFAULT nextval('%s'::regclass);";
+	
+	@Override
+	public List<String> createAutoIncrement(String tableName, IPrimaryKeyColumnMeta primaryKey, long startWith) {
+		String seqName = String.format("%s_%s_seq", tableName, primaryKey.getColumnName());
+		String sql = null;
+		if(primaryKey.getField().getType() == int.class || primaryKey.getField().getType() == Integer.class) {
+			sql = String.format(CREATE_TABLE_SEQ, seqName, "integer", startWith);
+		} else {
+			sql = String.format(CREATE_TABLE_SEQ, seqName, "bigint", startWith);
+		}
+		List<String> results = new ArrayList<>();
+		results.add(sql);
+		String setSeq = String.format(SET_SEQ_TO_PRIMARYKEY, tableName, primaryKey.getColumnName(), seqName);
+		results.add(setSeq);
+		results.add(String.format(SET_AUTO_INCREMENT, seqName, startWith));
+		return results;
 	}
 	
 	/**
 	 * 设置自增ID
 	 */
-	private final String SET_AUTO_INCREMENT = "SELECT setval(\"%s\"::regclass, %s);";
+	private final String SET_AUTO_INCREMENT = "SELECT SETVAL('%s'::regclass, %s);";
 
 	@Override
-	public String setAutoIncrement(String tableName, long autoinc) {
-		return String.format(SET_AUTO_INCREMENT, tableName, autoinc);
+	public String setAutoIncrement(String tableName, String primaryKeyName, long autoinc) {
+		String seqName = String.format("%s_%s_seq", tableName, primaryKeyName);
+		return String.format(SET_AUTO_INCREMENT, seqName, autoinc);
 	}
 
 	@Override
-	public String createTableSql(String tableName, EntityMeta<?> entityMeta) {
+	public List<String> createTableSql(String tableName, EntityMeta<?> entityMeta) {
 		StringBuilder result = new StringBuilder();
 		result.append(String.format("CREATE TABLE \"%s\" (", tableName));
 		
@@ -280,11 +340,19 @@ public class PostgreSqlDDL implements IDDL {
 		
 		IPrimaryKeyColumnMeta primaryKeyMeta = entityMeta.getPrimaryKeyMeta();
 		//创建表的时候只进行了主键的定义，索引的设置会在表构建好之后进行处理
-		result.append(String.format("PRIMARY KEY (`%s`)", primaryKeyMeta.getColumnName()));
+		result.append(String.format("CONSTRAINT \"%s_pkey\" PRIMARY KEY (\"%s\")", tableName, primaryKeyMeta.getColumnName()));
 		//这里并没有对自增ID进行初始处理，自增ID的设置会在表构建好之后进行处理
-		result.append(") ENGINE=InnoDB DEFAULT CHARSET=").append(entityMeta.getTableCharset().value());
-		result.append(" COMMENT='").append(entityMeta.getTableComment()).append("';");
-		return result.toString();
+		result.append(");");
+		
+		List<String> results = new ArrayList<>();
+		results.add(result.toString());
+		String tableComment = String.format("COMMENT ON TABLE \"%s\" IS '%s';", tableName, entityMeta.getTableComment());
+		results.add(tableComment);
+		for(ColumnMeta columnMeta : entityMeta.getColumnList()) {
+			String columnComment = String.format("COMMENT ON COLUMN \"%s\".\"%s\" IS '%s';", tableName, columnMeta.getColumnName(), columnMeta.getComment());
+			results.add(columnComment);
+		}
+		return results;
 	}
 	
 	@Override
@@ -295,15 +363,21 @@ public class PostgreSqlDDL implements IDDL {
 		StringBuilder result = new StringBuilder();
 		result.append(String.format("\"%s\" %s", columnMeta.getColumnName(), columnMeta.dbColumnType()));
 		String autoIncrement = "";
-		if(columnMeta instanceof MPrimaryKeyColumnMeta) {
-			MPrimaryKeyColumnMeta keyMeta = (MPrimaryKeyColumnMeta)columnMeta;
-			if(keyMeta.getStrategy() == Strategy.AUTO) {
-				autoIncrement = "AUTO_INCREMENT";
-			}
+		if(columnMeta instanceof IPrimaryKeyColumnMeta) {
+			result.append(" NOT NULL ");
+			
+//			IPrimaryKeyColumnMeta keyMeta = (IPrimaryKeyColumnMeta)columnMeta;
+//			if(keyMeta.getStrategy() == Strategy.AUTO) {
+//				autoIncrement = "AUTO_INCREMENT";
+//			} else {
+//				
+//			}
+		} else {
+			
 		}
-		result.append(" ").append(columnMeta.defaultValue()).append(" ").append(autoIncrement);
+		result.append(" ").append(columnMeta.defaultValue());
 		// 字段备注
-		result.append(" COMMENT '").append(columnMeta.getComment()).append("'");
+//		result.append(" COMMENT '").append(columnMeta.getComment()).append("'");
 		return result.toString();
 	}
 }

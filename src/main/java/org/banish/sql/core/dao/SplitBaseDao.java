@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.mysql.dao;
+package org.banish.sql.core.dao;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,13 +12,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.banish.sql.core.annotation.enuma.SplitWay;
+import org.banish.sql.core.builder.TableBuilder;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.SplitEntityMeta;
 import org.banish.sql.core.sql.IDDL;
-import org.banish.sql.mysql.table.TableBuilder;
-import org.banish.sql.mysql.table.dml.ISql;
-import org.banish.sql.mysql.table.dml.SplitSql;
+import org.banish.sql.core.sql.IDML;
+import org.banish.sql.core.sql.SplitDML;
 
 /**
  * @author YY
@@ -28,7 +28,7 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 	/**
 	 * <表名，Sql组合>
 	 */
-	private ConcurrentMap<String, SplitSql<T>> splitSqlMap = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, SplitDML<T>> splitSqlMap = new ConcurrentHashMap<>();
 	
 	private SplitEntityMeta<T> logEntityMeta;
 	
@@ -43,19 +43,19 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 		} else if(splitWay == SplitWay.VALUE) {
 		} else {
 			String tableName = entityMeta.getSplitTableName(System.currentTimeMillis());
-			SplitSql<T> sql = createSql(tableName);
+			SplitDML<T> sql = createSql(tableName);
 			splitSqlMap.put(tableName, sql);
 		}
 	}
 	
 	@Override
-	protected ISql<T> getSql(T t) {
+	protected IDML<T> getSql(T t) {
 		return ensureSqlInit(t);
 	}
 	
-	private SplitSql<T> ensureSqlInit(T t) {
+	private SplitDML<T> ensureSqlInit(T t) {
 		String tableName = logEntityMeta.getSplitTableNameByEntity(t);
-		SplitSql<T> sql = splitSqlMap.get(tableName);
+		SplitDML<T> sql = splitSqlMap.get(tableName);
 		if(sql == null) {
 			synchronized (this) {
 				sql = splitSqlMap.get(tableName);
@@ -68,32 +68,32 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 		return sql;
 	}
 	
-	private SplitSql<T> createSql(String tableName) {
+	private SplitDML<T> createSql(String tableName) {
 		//自动建表
 		iddl = TableBuilder.build(this, tableName);
 		//构建Sql对象
-		SplitSql<T> sql = new SplitSql<>(this.getEntityMeta(), tableName);
+		SplitDML<T> sql = this.getDataSource().getMetaFactory().newSplitDML(logEntityMeta, tableName);
 		return sql;
 	} 
 	
 
 	@Override
 	protected void insertAllWithAutoId(List<T> ts) {
-		Map<SplitSql<T>, List<T>> splitMap = splitIntoMap(ts);
-		for(Entry<SplitSql<T>, List<T>> entry : splitMap.entrySet()) {
+		Map<SplitDML<T>, List<T>> splitMap = splitIntoMap(ts);
+		for(Entry<SplitDML<T>, List<T>> entry : splitMap.entrySet()) {
 			insertAllWithAutoId(entry.getValue(), entry.getKey());
 		}
 	}
 	
-	private void insertAllWithAutoId(List<T> ts, SplitSql<T> sqlTemplate) {
+	private void insertAllWithAutoId(List<T> ts, SplitDML<T> sqlTemplate) {
 		String sql = sqlTemplate.insert();
 		super.insertAllWithAutoId(ts, sql);
 	}
 	
-	private Map<SplitSql<T>, List<T>> splitIntoMap(List<T> ts) {
-		Map<SplitSql<T>, List<T>> splitMap = new HashMap<>();
+	private Map<SplitDML<T>, List<T>> splitIntoMap(List<T> ts) {
+		Map<SplitDML<T>, List<T>> splitMap = new HashMap<>();
 		for(T t : ts) {
-			SplitSql<T> sql = ensureSqlInit(t);
+			SplitDML<T> sql = ensureSqlInit(t);
 			List<T> list = splitMap.get(sql);
 			if(list == null) {
 				list = new ArrayList<>();
@@ -106,8 +106,8 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 
 	@Override
 	protected void insertAllWithIdentityId(List<T> ts) {
-		Map<SplitSql<T>, List<T>> splitMap = splitIntoMap(ts);
-		for(Entry<SplitSql<T>, List<T>> entry : splitMap.entrySet()) {
+		Map<SplitDML<T>, List<T>> splitMap = splitIntoMap(ts);
+		for(Entry<SplitDML<T>, List<T>> entry : splitMap.entrySet()) {
 			insertAllWithIdentityId(entry.getValue(), entry.getKey());
 		}
 	}
@@ -117,20 +117,20 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 	 * @param ts 必须要求是列表，以保证返回的ID数组顺序与列表对象顺序一致
 	 * @return
 	 */
-	private void insertAllWithIdentityId(List<T> ts, SplitSql<T> sqlTemplate) {
+	private void insertAllWithIdentityId(List<T> ts, SplitDML<T> sqlTemplate) {
 		String sql = sqlTemplate.insert();
 		super.insertAllWithIdentityId(ts, sql);
 	}
 
 	@Override
 	public void updateAll(List<T> ts) {
-		Map<SplitSql<T>, List<T>> splitMap = splitIntoMap(ts);
-		for(Entry<SplitSql<T>, List<T>> entry : splitMap.entrySet()) {
+		Map<SplitDML<T>, List<T>> splitMap = splitIntoMap(ts);
+		for(Entry<SplitDML<T>, List<T>> entry : splitMap.entrySet()) {
 			updateAll(entry.getValue(), entry.getKey());
 		}
 	}
 	
-	private void updateAll(List<T> ts, SplitSql<T> sqlTemplate) {
+	private void updateAll(List<T> ts, SplitDML<T> sqlTemplate) {
 		String sql = sqlTemplate.update();
 		super.updateAll(ts, sql);
 	}
@@ -174,7 +174,7 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 	
 	public List<T> queryListWhere(Object splitValue, String where, Object... params) {
 		String tableName = this.logEntityMeta.getSplitTableName(splitValue);
-		SplitSql<T> isql = splitSqlMap.get(tableName);
+		SplitDML<T> isql = splitSqlMap.get(tableName);
 		if(isql == null) {
 			if(iddl.isTableExist(tableName)) {
 				synchronized (this) {
@@ -194,7 +194,7 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 	
 	public long countWhere(Object splitValue, String where, Object... params) {
 		String tableName = this.logEntityMeta.getSplitTableName(splitValue);
-		SplitSql<T> isql = splitSqlMap.get(tableName);
+		SplitDML<T> isql = splitSqlMap.get(tableName);
 		if(isql == null) {
 			if(iddl.isTableExist(tableName)) {
 				synchronized (this) {

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.mysql.dao;
+package org.banish.sql.core.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -88,7 +88,7 @@ public class Dao {
 			for(int i = 0; i < params.length; i++) {
 				statement.setObject(i + 1, params[i]);
 			}
-			statement.executeUpdate();
+			statement.execute();
 		} catch (Exception e) {
 			logger.error("executeSql error with sql {}, params {}", sql, Arrays.toString(params));
 			throw new RuntimeException(e);
@@ -139,7 +139,7 @@ public class Dao {
 		Connection connection = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
-		String sql = "SELECT count(1) AS number FROM `" + tableName + "` " + where;
+		String sql = "SELECT count(1) AS number FROM " + tableName + " " + where;
 		try {
 			connection = dataSource.getConnection();
 			statement = connection.prepareStatement(sql);

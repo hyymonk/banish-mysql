@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.mysql.dao;
+package org.banish.sql.core.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,7 +16,8 @@ import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.ColumnMeta;
 import org.banish.sql.core.orm.EntityMeta;
-import org.banish.sql.mysql.table.dml.ISql;
+import org.banish.sql.core.orm.IEntityMeta;
+import org.banish.sql.core.sql.IDML;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public abstract class OriginDao<T extends AbstractEntity> {
 		this.entityMeta = entityMeta;
 	}
 	
-	protected abstract ISql<T> getSql(T t);
+	protected abstract IDML<T> getSql(T t);
 	
 	public final EntityMeta<T> getEntityMeta() {
 		return entityMeta;
@@ -64,8 +65,9 @@ public abstract class OriginDao<T extends AbstractEntity> {
 			connection = this.dataSource.getConnection();
 			sql = this.getSql(t).insert();
 			statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-			for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
-				ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);
+			for(int i = 0; i < getEntityMeta().getInsertColumnList().size(); i++) {
+				ColumnMeta columnMeta = getEntityMeta().getInsertColumnList().get(i);
+				
 				Object obj = columnMeta.takeValue(t);
 				statement.setObject(i + 1, obj);
 			}
@@ -95,8 +97,8 @@ public abstract class OriginDao<T extends AbstractEntity> {
 			connection = this.dataSource.getConnection();
 			sql = this.getSql(t).insert();
 			statement = connection.prepareStatement(sql);
-			for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
-				ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);
+			for(int i = 0; i < getEntityMeta().getInsertColumnList().size(); i++) {
+				ColumnMeta columnMeta = getEntityMeta().getInsertColumnList().get(i);
 				Object obj = columnMeta.takeValue(t);
 				statement.setObject(i + 1, obj);
 			}
@@ -151,8 +153,8 @@ public abstract class OriginDao<T extends AbstractEntity> {
 				T t = ts.get(j);
 				t.setInsertTime(now);
 				t.setUpdateTime(now);
-				for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
-					ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);
+				for(int i = 0; i < getEntityMeta().getInsertColumnList().size(); i++) {
+					ColumnMeta columnMeta = getEntityMeta().getInsertColumnList().get(i);
 					Object obj = columnMeta.takeValue(t);
 					statement.setObject(i + 1, obj);
 				}
@@ -192,8 +194,8 @@ public abstract class OriginDao<T extends AbstractEntity> {
 				T t = ts.get(j);
 				t.setInsertTime(now);
 				t.setUpdateTime(now);
-				for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
-					ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);
+				for(int i = 0; i < getEntityMeta().getInsertColumnList().size(); i++) {
+					ColumnMeta columnMeta = getEntityMeta().getInsertColumnList().get(i);
 					Object obj = columnMeta.takeValue(t);
 					statement.setObject(i + 1, obj);
 				}
@@ -440,5 +442,13 @@ public abstract class OriginDao<T extends AbstractEntity> {
 		} finally {
 			Dao.close(rs, statement, connection);
 		}
+	}
+	
+	protected void close(ResultSet resultSet, PreparedStatement statement, Connection connection) {
+		Dao.close(resultSet, statement, connection);
+	}
+	
+	protected T formObject(IEntityMeta<T> entityMeta, ResultSet rs, boolean useAlias) {
+		return Dao.formObject(entityMeta, rs, useAlias);
 	}
 }

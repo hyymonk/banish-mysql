@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.banish.sql.core.annotation.Column;
 import org.banish.sql.core.annotation.Id;
+import org.banish.sql.core.annotation.Id.Strategy;
 import org.banish.sql.core.annotation.enuma.Charset;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.tableinfo.ITable;
@@ -72,6 +73,10 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	 * 实体类属性名与数据列名的对应关系
 	 */
 	private final Map<String, String> fieldToColumn;
+	/**
+	 * 用于插入语句时的元数据
+	 */
+	private final List<ColumnMeta> insertColumnList;
 	
 	private final IMetaFactory metaFactory;
 	
@@ -103,6 +108,15 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 		this.fieldToColumn = Collections.unmodifiableMap(fieldToColumnMap);
 		//构建索引元数据
 		this.indexMap = Collections.unmodifiableMap(IndexMeta.build(clazz, table, this.tableName, this.fieldToColumn));
+		
+		List<ColumnMeta> insertColumnList = new ArrayList<>(allFields.size());
+		for(ColumnMeta columnMeta : this.columnList) {
+			if(columnMeta == this.primaryKeyMeta && this.primaryKeyMeta.getStrategy() == Strategy.AUTO) {
+				continue;
+			}
+			insertColumnList.add(columnMeta);
+		}
+		this.insertColumnList = Collections.unmodifiableList(insertColumnList);
 	}
 	
 	
@@ -224,5 +238,10 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 			e.printStackTrace();
 		}
 		return customInitId;
+	}
+
+
+	public List<ColumnMeta> getInsertColumnList() {
+		return insertColumnList;
 	}
 }

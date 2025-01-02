@@ -44,12 +44,13 @@ public class PPrimaryKeyColumnMeta extends ColumnMeta implements IPrimaryKeyColu
 
 	@Override
 	public void fillValue(Object t, int columnIndex, ResultSet rs) throws Exception {
+		//PostgreSql在插入具有自增主键的数据后，其返回的自增主键ResultSet不像Mysql那样只具有下标1的数据，而是包含了完整数据
 		if(field.getType() == int.class || field.getType() == Integer.class) {
-			field.set(t, rs.getInt(columnIndex));
+			field.set(t, rs.getInt(this.getColumnName()));
 		} else if(field.getType() == long.class || field.getType() == Long.class) {
-			field.set(t, rs.getLong(columnIndex));
+			field.set(t, rs.getLong(this.getColumnName()));
 		} else if(field.getType() == String.class) {
-			field.set(t, rs.getString(columnIndex));
+			field.set(t, rs.getString(this.getColumnName()));
 		}
 	}
 
@@ -73,9 +74,9 @@ public class PPrimaryKeyColumnMeta extends ColumnMeta implements IPrimaryKeyColu
 
 	@Override
 	public boolean isChange(String dbColumnType, String dbColumnExtra) {
-		if(strategy == Strategy.AUTO && !"auto_increment".equals(dbColumnExtra)) {
-			return true;
-		}
+//		if(strategy == Strategy.AUTO && !"auto_increment".equals(dbColumnExtra)) {
+//			return true;
+//		}
 		if(field.getType() == int.class || field.getType() == Integer.class) {
 			if(!dbColumnType.startsWith("int4")) {
 				return true;

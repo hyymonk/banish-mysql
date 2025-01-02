@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.mysql.table;
+package org.banish.sql.core.builder;
 
 
 import java.util.HashMap;
@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import org.banish.sql.core.annotation.Id.Strategy;
 import org.banish.sql.core.annotation.enuma.IndexType;
 import org.banish.sql.core.annotation.enuma.IndexWay;
+import org.banish.sql.core.dao.OriginDao;
 import org.banish.sql.core.orm.ColumnMeta;
 import org.banish.sql.core.orm.EntityMeta;
 import org.banish.sql.core.orm.IPrimaryKeyColumnMeta;
@@ -19,8 +20,6 @@ import org.banish.sql.core.orm.IndexMeta;
 import org.banish.sql.core.sql.IDDL;
 import org.banish.sql.core.sql.IDDL.IIndexStruct;
 import org.banish.sql.core.sql.IDDL.ITableDes;
-import org.banish.sql.mysql.dao.OriginDao;
-import org.banish.sql.mysql.table.ddl.MySqlDDL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
@@ -42,8 +41,8 @@ public class TableBuilder {
 		if(SERVER_IDENTITY <= 0) {
 			throw new RuntimeException("数据库构建工具还没有指定服务器标识");
 		}
-		IDDL iddl = new MySqlDDL(dao.getDataSource(), dao.getEntityMeta().isAutoBuild());
 		EntityMeta<?> entityMeta = dao.getEntityMeta();
+		IDDL iddl = dao.getDataSource().getMetaFactory().newDDL(dao.getDataSource(), entityMeta.isAutoBuild());
 		
 		boolean tablExist = iddl.isTableExist(tableName);
 		if (!tablExist) {
@@ -77,8 +76,8 @@ public class TableBuilder {
 	 * @param baseDao
 	 */
 	private static void createTable(IDDL iddl, String tableName, EntityMeta<?> entityMeta) {
-		String ddlSql = iddl.createTableSql(tableName, entityMeta);
-		iddl.addDDL(ddlSql, "数据库DDL创建表");
+		List<String> ddlSqls = iddl.createTableSql(tableName, entityMeta);
+		iddl.addDDLs(ddlSqls, "数据库DDL创建表");
 	}
 	
 	/**
@@ -200,35 +199,50 @@ public class TableBuilder {
 	 * 更新自增主键
 	 * @param baseDao
 	 */
-	private static void updateAutoIncrement(IDDL iddl, String tableName, boolean tablExist, EntityMeta<?> entityMeta) {
+	private static void updateAutoIncrement(IDDL iddl, String tableName, boolean tableExist, EntityMeta<?> entityMeta) {
 		IPrimaryKeyColumnMeta keyMeta = entityMeta.getPrimaryKeyMeta();
 		if(keyMeta.getStrategy() != Strategy.AUTO) {
 			return;
 		}
-		
-		if(tablExist) {
-			//当前表中定义的自增主键
-			long currAutoId = iddl.getTableAutoinc(tableName);
-			long finalMaxId = currAutoId;
-			//查询出当前表中最大的自增主键
-			long currMaxId = iddl.getTableMaxId(tableName, keyMeta.getColumnName());
-			if(currMaxId + 1 > finalMaxId) {
-				finalMaxId = currMaxId + 1;
-			}
-			//业务开发定义的自增主键
-			long customInitId = entityMeta.getCustomInitId();
-			if(customInitId > 0) {
-				customInitId = customInitId + 1;
+		if(tableExist) {
+			if(!iddl.hasAutoIncrement(tableName, keyMeta.getColumnName())) {
+				//业务开发定义的自增主键
+				long customInitId = entityMeta.getCustomInitId();
+				if(customInitId > 0) {
+					customInitId = customInitId + 1;
+				} else {
+					customInitId = keyMeta.getBase() * SERVER_IDENTITY + 1;
+				}
+				List<String> ddlSqls = iddl.createAutoIncrement(tableName, keyMeta, customInitId);
+				logger.info("currAutoId:{}, currMaxId:{}, customInitId:{}, finalMaxId:{}", 0, 0, customInitId, customInitId);
+				iddl.addDDLs(ddlSqls, "数据库DDL新增自增ID");
 			} else {
-				customInitId = keyMeta.getBase() * SERVER_IDENTITY + 1;
-			}
-			if(customInitId > finalMaxId) {
-				finalMaxId = customInitId;
-			}
-			if(finalMaxId > currAutoId) {
-				String ddlSql = iddl.setAutoIncrement(tableName, finalMaxId);
-				logger.info("currAutoId:{}, currMaxId:{}, customInitId:{}, finalMaxId:{}", currAutoId, currMaxId, customInitId, finalMaxId);
-				iddl.addDDL(ddlSql, "数据库DDL修改自增ID");
+				//TODO 检查序列是否一致
+				
+				
+				//当前表中定义的自增主键
+				long currAutoId = iddl.getTableAutoinc(tableName, keyMeta.getColumnName());
+				long finalMaxId = currAutoId;
+				//查询出当前表中最大的自增主键
+				long currMaxId = iddl.getTableMaxId(tableName, keyMeta.getColumnName());
+				if(currMaxId + 1 > finalMaxId) {
+					finalMaxId = currMaxId + 1;
+				}
+				//业务开发定义的自增主键
+				long customInitId = entityMeta.getCustomInitId();
+				if(customInitId > 0) {
+					customInitId = customInitId + 1;
+				} else {
+					customInitId = keyMeta.getBase() * SERVER_IDENTITY + 1;
+				}
+				if(customInitId > finalMaxId) {
+					finalMaxId = customInitId;
+				}
+				if(finalMaxId > currAutoId) {
+					String ddlSql = iddl.setAutoIncrement(tableName, keyMeta.getColumnName(), finalMaxId);
+					logger.info("currAutoId:{}, currMaxId:{}, customInitId:{}, finalMaxId:{}", currAutoId, currMaxId, customInitId, finalMaxId);
+					iddl.addDDL(ddlSql, "数据库DDL修改自增ID");
+				}
 			}
 		} else {
 			//业务开发定义的自增主键
@@ -238,9 +252,9 @@ public class TableBuilder {
 			} else {
 				customInitId = keyMeta.getBase() * SERVER_IDENTITY + 1;
 			}
-			String ddlSql = iddl.setAutoIncrement(tableName, customInitId);
+			List<String> ddlSqls = iddl.createAutoIncrement(tableName, keyMeta, customInitId);
 			logger.info("currAutoId:{}, currMaxId:{}, customInitId:{}, finalMaxId:{}", 0, 0, customInitId, customInitId);
-			iddl.addDDL(ddlSql, "数据库DDL修改自增ID");
+			iddl.addDDLs(ddlSqls, "数据库DDL新增自增ID");
 		}
 	}
 }

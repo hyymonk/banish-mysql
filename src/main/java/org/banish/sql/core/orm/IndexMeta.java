@@ -23,82 +23,91 @@ public class IndexMeta {
 	private List<String> columns = new ArrayList<>();
 	private IndexType type;
 	private IndexWay way;
+
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public IndexType getType() {
 		return type;
 	}
+
 	public void setType(IndexType type) {
 		this.type = type;
 	}
+
 	public IndexWay getWay() {
 		return way;
 	}
+
 	public void setWay(IndexWay way) {
 		this.way = way;
 	}
+
 	public List<String> getColumns() {
 		return columns;
 	}
+
 	public void setColumns(List<String> columns) {
 		this.columns = columns;
 	}
-	public String getColumnsString() {
+
+	public String getColumnsString(String dot) {
 		StringBuffer columnBuff = new StringBuffer();
 		boolean isFirst = true;
-		for(String column : columns) {
-			if(!isFirst) {
+		for (String column : columns) {
+			if (!isFirst) {
 				columnBuff.append(",");
 			}
-			columnBuff.append(String.format("`%s`", column));
+			columnBuff.append(String.format(dot + "%s" + dot, column));
 			isFirst = false;
 		}
 		return columnBuff.toString();
 	}
-	
-	public static Map<String, IndexMeta> build(Class<?> clazz, ITable table, String tableName, Map<String, String> fieldToColumn) {
-		
+
+	public static Map<String, IndexMeta> build(Class<?> clazz, ITable table, String tableName,
+			Map<String, String> fieldToColumn) {
 		List<Index> allIndexes = new ArrayList<>();
-		
+
 		Class<?> currClazz = clazz;
-		while(currClazz != null) {
+		while (currClazz != null) {
 			SuperIndex superIndex = currClazz.getAnnotation(SuperIndex.class);
-			if(superIndex != null) {
-				for(Index index : superIndex.indexs()) {
+			if (superIndex != null) {
+				for (Index index : superIndex.indexs()) {
 					allIndexes.add(index);
 				}
 			}
 			currClazz = currClazz.getSuperclass();
 		}
-		for(Index index : table.indexs()) {
+		for (Index index : table.indexs()) {
 			allIndexes.add(index);
 		}
-		
+
 		Map<String, IndexMeta> indexMap = new HashMap<>();
 		Map<String, String> fieldsMap = new HashMap<>();
-		//表注解上定义的索引
-		for(Index index : allIndexes) {
+		// 表注解上定义的索引
+		for (Index index : allIndexes) {
 			String indexName = "idx";
-			for(String fieldName : index.fields()) {
+			for (String fieldName : index.fields()) {
 				indexName += "_" + IEntityMeta.makeSnakeCase(fieldName);
 			}
-			if(indexMap.containsKey(indexName)) {
+			if (indexMap.containsKey(indexName)) {
 				throw new RuntimeException("实体类[" + tableName + "]中名字为[" + indexName + "]的索引被重复定义");
 			}
 			String useFields = String.join("_", index.fields());
-			if(fieldsMap.containsKey(useFields)) {
+			if (fieldsMap.containsKey(useFields)) {
 				throw new RuntimeException("实体类[" + tableName + "]中名字为[" + indexName + "]的索引被重复定义");
 			}
-			
+
 			IndexMeta tableIndex = new IndexMeta();
 			tableIndex.setName(indexName);
-			for(String fieldName : index.fields()) {
+			for (String fieldName : index.fields()) {
 				String columnName = fieldToColumn.get(fieldName);
-				if(columnName == null) {
+				if (columnName == null) {
 					throw new RuntimeException("实体类[" + tableName + "]中未找到字段名[" + fieldName + "]映射的列名");
 				}
 				tableIndex.getColumns().add(columnName);
@@ -110,5 +119,5 @@ public class IndexMeta {
 		}
 		return indexMap;
 	}
-	
+
 }

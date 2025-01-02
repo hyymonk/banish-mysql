@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.mysql.dao;
+package org.banish.sql.core.dao;
 
 import java.util.ArrayList;
 import java.util.Arrays;

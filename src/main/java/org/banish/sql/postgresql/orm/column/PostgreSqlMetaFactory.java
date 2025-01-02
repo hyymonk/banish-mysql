@@ -8,9 +8,18 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+import org.banish.sql.core.datasource.IDataSource;
+import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.ColumnMeta;
+import org.banish.sql.core.orm.EntityMeta;
 import org.banish.sql.core.orm.IMetaFactory;
 import org.banish.sql.core.orm.IPrimaryKeyColumnMeta;
+import org.banish.sql.core.sql.DefaultDML;
+import org.banish.sql.core.sql.IDDL;
+import org.banish.sql.core.sql.SplitDML;
+import org.banish.sql.postgresql.sql.PostgreSqlDDL;
+import org.banish.sql.postgresql.sql.PostgreSqlDefaultDML;
+import org.banish.sql.postgresql.sql.PostgreSqlSplitDML;
 
 /**
  * @author YY
@@ -20,6 +29,19 @@ public class PostgreSqlMetaFactory implements IMetaFactory {
 	public static final PostgreSqlMetaFactory INS = new PostgreSqlMetaFactory();
 	
 	private PostgreSqlMetaFactory() {}
+	
+	@Override
+	public IDDL newDDL(IDataSource dataSource, boolean autoBuild) {
+		return new PostgreSqlDDL(dataSource, autoBuild);
+	}
+	
+	public <T extends AbstractEntity> DefaultDML<T> newDefaultDML(EntityMeta<T> entityMeta) {
+		return new PostgreSqlDefaultDML<T>(entityMeta);
+	}
+	
+	public <T extends AbstractEntity> SplitDML<T> newSplitDML(EntityMeta<T> entityMeta, String tableName) {
+		return new PostgreSqlSplitDML<T>(entityMeta, tableName);
+	}
 	
 	@Override
 	public ColumnMeta newColumnMeta(Field field) {

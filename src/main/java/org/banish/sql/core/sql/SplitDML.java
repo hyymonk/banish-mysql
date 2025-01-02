@@ -1,16 +1,15 @@
 /**
  * 
  */
-package org.banish.sql.mysql.table.dml;
+package org.banish.sql.core.sql;
 
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.EntityMeta;
 
 /**
  * @author YY
- *
  */
-public class SplitSql<T extends AbstractEntity> implements ISql<T> {
+public abstract class SplitDML<T extends AbstractEntity> extends IDML<T> {
 
 	public final String TABLE_NAME;
 	public final String SELECT_ALL;
@@ -19,17 +18,17 @@ public class SplitSql<T extends AbstractEntity> implements ISql<T> {
 	public final String DELETE;
 	public final String COUNT_ALL;
 	
-	public SplitSql(EntityMeta<T> entityMeta, String tableName) {
+	public SplitDML(EntityMeta<T> entityMeta, String tableName) {
 		this.TABLE_NAME = tableName;
 		
 //		SELECT = select(entityMeta);
-		SELECT_ALL = ISql.buildSelectAll(TABLE_NAME);
-		INSERT = ISql.buildInsertSql(entityMeta, TABLE_NAME);
-		UPDATE = ISql.buildUpdateSql(entityMeta, TABLE_NAME);
-		DELETE = ISql.buildDeleteSql(entityMeta, TABLE_NAME);
+		SELECT_ALL = buildSelectAll(TABLE_NAME);
+		INSERT = buildInsertSql(entityMeta, TABLE_NAME);
+		UPDATE = buildUpdateSql(entityMeta, TABLE_NAME);
+		DELETE = buildDeleteSql(entityMeta, TABLE_NAME);
 //		DELETE_IDS = deleteIds(entityMeta);
 //		DELETE_ALL = deleteAll(entityMeta);
-		COUNT_ALL = ISql.buildCountAll(TABLE_NAME);
+		COUNT_ALL = buildCountAll(TABLE_NAME);
 	}
 	
 	@Override

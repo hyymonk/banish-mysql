@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.mysql.dao;
+package org.banish.sql.core.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,13 +11,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.banish.sql.core.builder.TableBuilder;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.ColumnMeta;
 import org.banish.sql.core.orm.EntityMeta;
-import org.banish.sql.mysql.table.TableBuilder;
-import org.banish.sql.mysql.table.dml.DefaultSql;
-import org.banish.sql.mysql.table.dml.ISql;
+import org.banish.sql.core.sql.DefaultDML;
+import org.banish.sql.core.sql.IDML;
 
 /**
  * @author YY
@@ -25,11 +25,11 @@ import org.banish.sql.mysql.table.dml.ISql;
  */
 public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao<T> {
 	
-	private DefaultSql<T> sql;
+	private DefaultDML<T> sql;
 	
 	public DefaultBaseDao(IDataSource dataSource, EntityMeta<T> entityMeta) {
 		super(dataSource, entityMeta);
-		this.sql = new DefaultSql<>(entityMeta);
+		this.sql = dataSource.getMetaFactory().newDefaultDML(entityMeta);
 		//自动建表
 		TableBuilder.build(this, entityMeta.getTableName());
 	}
@@ -100,7 +100,7 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 			logger.error("{}.deleteAll error with sql {}", this.getEntityMeta().getTableName(), sql);
 			throw new RuntimeException(e);
 		} finally {
-			Dao.close(null, statement, connection);
+			close(null, statement, connection);
 		}
 	}
 	
@@ -125,7 +125,7 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 			logger.error("{}.deleteWhere error with sql {}", this.getEntityMeta().getTableName(), sql);
 			throw new RuntimeException(e);
 		} finally {
-			Dao.close(null, statement, connection);
+			close(null, statement, connection);
 		}
 	}
 	
@@ -145,7 +145,7 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 			statement.setObject(1, primaryKey);
 			rs = statement.executeQuery();
 			if(rs.next()) {
-				return Dao.formObject(getEntityMeta(), rs, false);
+				return formObject(getEntityMeta(), rs, false);
 			} else {
 				return null;
 			}
@@ -153,7 +153,7 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 			logger.error("{}.query error with sql {}", this.getEntityMeta().getTableName(), sql);
 			throw new RuntimeException(e);
 		} finally {
-			Dao.close(rs, statement, connection);
+			close(rs, statement, connection);
 		}
 	}
 	
@@ -173,14 +173,14 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 			
 			List<T> ts = new ArrayList<>();
 			while(rs.next()) {
-				ts.add(Dao.formObject(getEntityMeta(), rs, false));
+				ts.add(formObject(getEntityMeta(), rs, false));
 			}
 			return ts;
 		} catch (Exception e) {
 			logger.error("{}.queryAll error with sql {}", this.getEntityMeta().getTableName(), sql);
 			throw new RuntimeException(e);
 		} finally {
-			Dao.close(rs, statement, connection);
+			close(rs, statement, connection);
 		}
 	}
 	
@@ -218,7 +218,7 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 	}
 
 	@Override
-	protected ISql<T> getSql(T t) {
+	protected IDML<T> getSql(T t) {
 		return sql;
 	}
 	@Override
@@ -266,7 +266,7 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 			if(useTime >= this.slowTime) {
 				logger.warn("sql {} execute showly use {} millis with {} entities", sql, useTime, ts.size());
 			}
-			Dao.close(rs, statement, connection);
+			close(rs, statement, connection);
 		}
 	}
 }
