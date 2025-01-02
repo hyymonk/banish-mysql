@@ -19,7 +19,7 @@ public class MStructColumnMeta extends MStringColumnMeta {
 
 	private final String formatter;
 	
-	protected MStructColumnMeta(Field field) {
+	public MStructColumnMeta(Field field) {
 		super(field);
 		Column column = field.getAnnotation(Column.class);
 		if("".equals(column.formatter())) {

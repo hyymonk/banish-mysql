@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.mysql.orm.column;
+package org.banish.sql.mysql;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -12,10 +12,24 @@ import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.ColumnMeta;
 import org.banish.sql.core.orm.EntityMeta;
-import org.banish.sql.core.orm.IMetaFactory;
+import org.banish.sql.core.orm.IOrmFactory;
 import org.banish.sql.core.sql.DefaultDML;
 import org.banish.sql.core.sql.IDDL;
 import org.banish.sql.core.sql.SplitDML;
+import org.banish.sql.mysql.orm.column.MBigDecimalColumnMeta;
+import org.banish.sql.mysql.orm.column.MBooleanColumnMeta;
+import org.banish.sql.mysql.orm.column.MByteColumnMeta;
+import org.banish.sql.mysql.orm.column.MDateColumnMeta;
+import org.banish.sql.mysql.orm.column.MDoubleColumnMeta;
+import org.banish.sql.mysql.orm.column.MEnumColumnMeta;
+import org.banish.sql.mysql.orm.column.MFloatColumnMeta;
+import org.banish.sql.mysql.orm.column.MIntegerColumnMeta;
+import org.banish.sql.mysql.orm.column.MLocalDateTimeColumnMeta;
+import org.banish.sql.mysql.orm.column.MLongColumnMeta;
+import org.banish.sql.mysql.orm.column.MPrimaryKeyColumnMeta;
+import org.banish.sql.mysql.orm.column.MShortColumnMeta;
+import org.banish.sql.mysql.orm.column.MStringColumnMeta;
+import org.banish.sql.mysql.orm.column.MStructColumnMeta;
 import org.banish.sql.mysql.sql.MySqlDDL;
 import org.banish.sql.mysql.sql.MySqlDefaultDML;
 import org.banish.sql.mysql.sql.MySqlSplitDML;
@@ -23,11 +37,11 @@ import org.banish.sql.mysql.sql.MySqlSplitDML;
 /**
  * @author YY
  */
-public class MySqlMetaFactory implements IMetaFactory {
+public class MySqlOrmFactory implements IOrmFactory {
 
-	public static final MySqlMetaFactory INS = new MySqlMetaFactory();
+	public static final MySqlOrmFactory INS = new MySqlOrmFactory();
 	
-	private MySqlMetaFactory() {}
+	private MySqlOrmFactory() {}
 	
 	@Override
 	public IDDL newDDL(IDataSource dataSource, boolean autoBuild) {

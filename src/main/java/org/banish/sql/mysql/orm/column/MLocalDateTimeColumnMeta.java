@@ -15,7 +15,7 @@ import org.banish.sql.core.orm.ColumnMeta;
  */
 public class MLocalDateTimeColumnMeta extends ColumnMeta {
 
-	protected MLocalDateTimeColumnMeta(Field field) {
+	public MLocalDateTimeColumnMeta(Field field) {
 		super(field);
 	}
 

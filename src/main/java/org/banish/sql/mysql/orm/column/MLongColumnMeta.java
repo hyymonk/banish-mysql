@@ -15,7 +15,7 @@ import org.banish.sql.core.orm.ColumnMeta;
  */
 public class MLongColumnMeta extends ColumnMeta {
 	
-	protected MLongColumnMeta(Field field) {
+	public MLongColumnMeta(Field field) {
 		super(field);
 	}
 

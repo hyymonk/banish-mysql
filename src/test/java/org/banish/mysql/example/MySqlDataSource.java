@@ -8,8 +8,8 @@ import java.sql.SQLException;
 
 import org.banish.DBConfig;
 import org.banish.sql.core.datasource.IDataSource;
-import org.banish.sql.core.orm.IMetaFactory;
-import org.banish.sql.mysql.orm.column.MySqlMetaFactory;
+import org.banish.sql.core.orm.IOrmFactory;
+import org.banish.sql.mysql.MySqlOrmFactory;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
@@ -96,7 +96,7 @@ public class MySqlDataSource implements IDataSource {
 	}
 
 	@Override
-	public IMetaFactory getMetaFactory() {
-		return MySqlMetaFactory.INS;
+	public IOrmFactory getMetaFactory() {
+		return MySqlOrmFactory.INS;
 	}
 }

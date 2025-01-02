@@ -78,9 +78,9 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	 */
 	private final List<ColumnMeta> insertColumnList;
 	
-	private final IMetaFactory metaFactory;
+	private final IOrmFactory metaFactory;
 	
-	protected EntityMeta(Class<T> clazz, ITable table, IMetaFactory metaFactory) {
+	protected EntityMeta(Class<T> clazz, ITable table, IOrmFactory metaFactory) {
 		this.clazz = clazz;
 		this.metaFactory = metaFactory;
 		if("".equals(table.name())) {

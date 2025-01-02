@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.postgresql.orm.column;
+package org.banish.sql.postgresql.column;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -12,9 +12,9 @@ import org.banish.sql.core.orm.ColumnMeta;
  * @author YY
  *
  */
-public class PIntegerColumnMeta extends ColumnMeta {
+public class PDateColumnMeta extends ColumnMeta {
 	
-	protected PIntegerColumnMeta(Field field) {
+	public PDateColumnMeta(Field field) {
 		super(field);
 	}
 
@@ -25,21 +25,21 @@ public class PIntegerColumnMeta extends ColumnMeta {
 
 	@Override
 	public void fillValue(Object t, int columnIndex, ResultSet rs) throws Exception {
-		field.set(t, rs.getInt(columnIndex));
+		field.set(t, rs.getTimestamp(columnIndex));
 	}
 	
 	@Override
 	public String dbColumnType() {
-		return "int4";
+		return "timestamp";
 	}
 	
 	@Override
 	public String defaultValue() {
-		return "DEFAULT 0";
+		return "";
 	}
 	
 	@Override
 	public boolean isChange(String dbColumnType, String dbColumnExtra) {
-		return !dbColumnType.startsWith("int4");
+		return !dbColumnType.startsWith("timestamp");
 	}
 }

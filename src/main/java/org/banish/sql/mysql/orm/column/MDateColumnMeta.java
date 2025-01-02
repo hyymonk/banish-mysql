@@ -14,7 +14,7 @@ import org.banish.sql.core.orm.ColumnMeta;
  */
 public class MDateColumnMeta extends ColumnMeta {
 	
-	protected MDateColumnMeta(Field field) {
+	public MDateColumnMeta(Field field) {
 		super(field);
 	}
 

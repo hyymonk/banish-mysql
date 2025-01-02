@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.postgresql.orm.column;
+package org.banish.sql.postgresql.column;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -24,7 +24,7 @@ public class PPrimaryKeyColumnMeta extends ColumnMeta implements IPrimaryKeyColu
 	private final int length;
 	private final long base;
 	
-	protected PPrimaryKeyColumnMeta(Field field) {
+	public PPrimaryKeyColumnMeta(Field field) {
 		super(field);
 		Id id = field.getAnnotation(Id.class);
 		this.strategy = id.strategy();

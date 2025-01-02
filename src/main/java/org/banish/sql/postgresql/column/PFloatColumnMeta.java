@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.postgresql.orm.column;
+package org.banish.sql.postgresql.column;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -12,25 +12,25 @@ import org.banish.sql.core.orm.ColumnMeta;
  * @author YY
  *
  */
-public class PShortColumnMeta extends ColumnMeta {
+public class PFloatColumnMeta extends ColumnMeta {
 	
-	protected PShortColumnMeta(Field field) {
+	public PFloatColumnMeta(Field field) {
 		super(field);
 	}
 
 	@Override
 	public Object takeValue(Object t) throws Exception {
-		return field.getShort(t);
+		return field.getFloat(t);
 	}
 
 	@Override
 	public void fillValue(Object t, int columnIndex, ResultSet rs) throws Exception {
-		field.set(t, rs.getShort(columnIndex));
+		field.set(t, rs.getFloat(columnIndex));
 	}
 	
 	@Override
 	public String dbColumnType() {
-		return "int4";
+		return "float4";
 	}
 	
 	@Override
@@ -40,6 +40,6 @@ public class PShortColumnMeta extends ColumnMeta {
 	
 	@Override
 	public boolean isChange(String dbColumnType, String dbColumnExtra) {
-		return !dbColumnType.startsWith("int4");
+		return !dbColumnType.startsWith("float4");
 	}
 }

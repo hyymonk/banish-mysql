@@ -6,7 +6,7 @@ package org.banish.sql.core.datasource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.banish.sql.core.orm.IMetaFactory;
+import org.banish.sql.core.orm.IOrmFactory;
 
 /**
  * 
@@ -33,5 +33,5 @@ public interface IDataSource {
 	 */
 	String getAlias();
 	
-	IMetaFactory getMetaFactory();
+	IOrmFactory getMetaFactory();
 }

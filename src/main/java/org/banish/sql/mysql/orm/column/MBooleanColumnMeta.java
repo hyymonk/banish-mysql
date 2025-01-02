@@ -14,7 +14,7 @@ import org.banish.sql.core.orm.ColumnMeta;
  */
 public class MBooleanColumnMeta extends ColumnMeta {
 
-	protected MBooleanColumnMeta(Field field) {
+	public MBooleanColumnMeta(Field field) {
 		super(field);
 	}
 

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.postgresql.orm.column;
+package org.banish.sql.postgresql.column;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -12,25 +12,25 @@ import org.banish.sql.core.orm.ColumnMeta;
  * @author YY
  *
  */
-public class PDoubleColumnMeta extends ColumnMeta {
+public class PByteColumnMeta extends ColumnMeta {
 	
-	protected PDoubleColumnMeta(Field field) {
+	public PByteColumnMeta(Field field) {
 		super(field);
 	}
 
 	@Override
 	public Object takeValue(Object t) throws Exception {
-		return field.getDouble(t);
+		return field.getByte(t);
 	}
 
 	@Override
 	public void fillValue(Object t, int columnIndex, ResultSet rs) throws Exception {
-		field.set(t, rs.getDouble(columnIndex));
+		field.set(t, rs.getByte(columnIndex));
 	}
 	
 	@Override
 	public String dbColumnType() {
-		return "float8";
+		return "int2";
 	}
 	
 	@Override
@@ -40,6 +40,6 @@ public class PDoubleColumnMeta extends ColumnMeta {
 	
 	@Override
 	public boolean isChange(String dbColumnType, String dbColumnExtra) {
-		return !dbColumnType.startsWith("float8");
+		return !dbColumnType.startsWith("int2");
 	}
 }

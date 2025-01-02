@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.postgresql.orm.column;
+package org.banish.sql.postgresql;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -12,11 +12,25 @@ import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.ColumnMeta;
 import org.banish.sql.core.orm.EntityMeta;
-import org.banish.sql.core.orm.IMetaFactory;
+import org.banish.sql.core.orm.IOrmFactory;
 import org.banish.sql.core.orm.IPrimaryKeyColumnMeta;
 import org.banish.sql.core.sql.DefaultDML;
 import org.banish.sql.core.sql.IDDL;
 import org.banish.sql.core.sql.SplitDML;
+import org.banish.sql.postgresql.column.PBigDecimalColumnMeta;
+import org.banish.sql.postgresql.column.PBooleanColumnMeta;
+import org.banish.sql.postgresql.column.PByteColumnMeta;
+import org.banish.sql.postgresql.column.PDateColumnMeta;
+import org.banish.sql.postgresql.column.PDoubleColumnMeta;
+import org.banish.sql.postgresql.column.PEnumColumnMeta;
+import org.banish.sql.postgresql.column.PFloatColumnMeta;
+import org.banish.sql.postgresql.column.PIntegerColumnMeta;
+import org.banish.sql.postgresql.column.PLocalDateTimeColumnMeta;
+import org.banish.sql.postgresql.column.PLongColumnMeta;
+import org.banish.sql.postgresql.column.PPrimaryKeyColumnMeta;
+import org.banish.sql.postgresql.column.PShortColumnMeta;
+import org.banish.sql.postgresql.column.PStringColumnMeta;
+import org.banish.sql.postgresql.column.PStructColumnMeta;
 import org.banish.sql.postgresql.sql.PostgreSqlDDL;
 import org.banish.sql.postgresql.sql.PostgreSqlDefaultDML;
 import org.banish.sql.postgresql.sql.PostgreSqlSplitDML;
@@ -24,11 +38,11 @@ import org.banish.sql.postgresql.sql.PostgreSqlSplitDML;
 /**
  * @author YY
  */
-public class PostgreSqlMetaFactory implements IMetaFactory {
+public class PostgreSqlOrmFactory implements IOrmFactory {
 
-	public static final PostgreSqlMetaFactory INS = new PostgreSqlMetaFactory();
+	public static final PostgreSqlOrmFactory INS = new PostgreSqlOrmFactory();
 	
-	private PostgreSqlMetaFactory() {}
+	private PostgreSqlOrmFactory() {}
 	
 	@Override
 	public IDDL newDDL(IDataSource dataSource, boolean autoBuild) {

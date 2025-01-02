@@ -19,7 +19,7 @@ public class SplitAsyncEntityMeta<T extends AbstractEntity> extends SplitEntityM
 	private final int asyncDelay;
 	private final String asyncName;
 	
-	public SplitAsyncEntityMeta(Class<T> clazz, IMetaFactory metaFactory) {
+	public SplitAsyncEntityMeta(Class<T> clazz, IOrmFactory metaFactory) {
 		super(clazz, metaFactory);
 		SplitTableInfo table = new SplitTableInfo(clazz.getAnnotation(SplitTable.class));
 		this.asyncType = table.asyncType();

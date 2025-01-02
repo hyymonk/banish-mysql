@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.postgresql.orm.column;
+package org.banish.sql.postgresql.column;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -19,7 +19,7 @@ public class PEnumColumnMeta extends ColumnMeta {
 	private final int length;
 	private Method method;
 	
-	protected PEnumColumnMeta(Field field) {
+	public PEnumColumnMeta(Field field) {
 		super(field);
 		Column column = field.getAnnotation(Column.class);
 		if(column != null) {

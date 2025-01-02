@@ -18,7 +18,7 @@ public class MStringColumnMeta extends ColumnMeta {
 	private final String[] extra;
 	private final int length;
 	
-	protected MStringColumnMeta(Field field) {
+	public MStringColumnMeta(Field field) {
 		super(field);
 		Column column = field.getAnnotation(Column.class);
 		if(column != null) {

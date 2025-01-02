@@ -17,7 +17,7 @@ public class MBigDecimalColumnMeta extends ColumnMeta {
 	
 	private final String[] extra;
 	
-	protected MBigDecimalColumnMeta(Field field) {
+	public MBigDecimalColumnMeta(Field field) {
 		super(field);
 		Column column = field.getAnnotation(Column.class);
 		if(column != null) {

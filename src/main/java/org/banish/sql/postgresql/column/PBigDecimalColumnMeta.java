@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.postgresql.orm.column;
+package org.banish.sql.postgresql.column;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -17,7 +17,7 @@ public class PBigDecimalColumnMeta extends ColumnMeta {
 	
 	private final String[] extra;
 	
-	protected PBigDecimalColumnMeta(Field field) {
+	public PBigDecimalColumnMeta(Field field) {
 		super(field);
 		Column column = field.getAnnotation(Column.class);
 		if(column != null) {

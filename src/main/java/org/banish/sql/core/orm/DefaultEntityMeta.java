@@ -13,7 +13,7 @@ import org.banish.sql.core.orm.tableinfo.DefaultTableInfo;
  */
 public class DefaultEntityMeta<T extends AbstractEntity> extends EntityMeta<T> {
 
-	public DefaultEntityMeta(Class<T> clazz, IMetaFactory metaFactory) {
+	public DefaultEntityMeta(Class<T> clazz, IOrmFactory metaFactory) {
 		super(clazz, new DefaultTableInfo(clazz.getAnnotation(Table.class)), metaFactory);
 	}
 }

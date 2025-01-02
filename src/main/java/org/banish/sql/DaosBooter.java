@@ -29,7 +29,7 @@ import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.DefaultAsyncEntityMeta;
 import org.banish.sql.core.orm.DefaultEntityMeta;
 import org.banish.sql.core.orm.EntityMeta;
-import org.banish.sql.core.orm.IMetaFactory;
+import org.banish.sql.core.orm.IOrmFactory;
 import org.banish.sql.core.orm.SplitAsyncEntityMeta;
 import org.banish.sql.core.orm.SplitEntityMeta;
 import org.banish.sql.core.valueformat.ValueFormatters;
@@ -154,7 +154,7 @@ public class DaosBooter {
 	}
 	
 	
-	private EntityMeta<?> buildMeta(Class<? extends AbstractEntity> clazz, IMetaFactory metaFactory) {
+	private EntityMeta<?> buildMeta(Class<? extends AbstractEntity> clazz, IOrmFactory metaFactory) {
 		Table table = clazz.getAnnotation(Table.class);
 		SplitTable splitTable = clazz.getAnnotation(SplitTable.class);
 		if(table != null && splitTable != null) {

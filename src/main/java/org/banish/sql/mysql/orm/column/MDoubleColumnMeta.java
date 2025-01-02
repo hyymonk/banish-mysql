@@ -17,7 +17,7 @@ public class MDoubleColumnMeta extends ColumnMeta {
 	
 	private final String[] extra;
 	
-	protected MDoubleColumnMeta(Field field) {
+	public MDoubleColumnMeta(Field field) {
 		super(field);
 		Column column = field.getAnnotation(Column.class);
 		if(column != null) {

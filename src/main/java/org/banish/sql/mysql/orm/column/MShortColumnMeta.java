@@ -14,7 +14,7 @@ import org.banish.sql.core.orm.ColumnMeta;
  */
 public class MShortColumnMeta extends ColumnMeta {
 	
-	protected MShortColumnMeta(Field field) {
+	public MShortColumnMeta(Field field) {
 		super(field);
 	}
 

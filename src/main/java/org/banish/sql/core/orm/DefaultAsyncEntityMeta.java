@@ -21,7 +21,7 @@ public class DefaultAsyncEntityMeta<T extends AbstractEntity> extends DefaultEnt
 	private final String asyncName;
 	private final UpdateType updateType;
 	
-	public DefaultAsyncEntityMeta(Class<T> clazz, IMetaFactory metaFactory) {
+	public DefaultAsyncEntityMeta(Class<T> clazz, IOrmFactory metaFactory) {
 		super(clazz, metaFactory);
 		DefaultTableInfo table = new DefaultTableInfo(clazz.getAnnotation(Table.class));
 		this.asyncType = table.asyncType();

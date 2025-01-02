@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.banish.sql.postgresql.orm.column;
+package org.banish.sql.postgresql.column;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -19,7 +19,7 @@ public class PStructColumnMeta extends PStringColumnMeta {
 
 	private final String formatter;
 	
-	protected PStructColumnMeta(Field field) {
+	public PStructColumnMeta(Field field) {
 		super(field);
 		Column column = field.getAnnotation(Column.class);
 		if("".equals(column.formatter())) {

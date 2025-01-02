@@ -30,7 +30,7 @@ public class AliasEntityMeta<T> implements IEntityMeta<T> {
 	 */
 	private final Map<String, ColumnMeta> columnMap;
 	
-	public AliasEntityMeta(Class<T> clazz, IMetaFactory metaFactory) {
+	public AliasEntityMeta(Class<T> clazz, IOrmFactory metaFactory) {
 		this.clazz = clazz;
 		
 		List<ColumnMeta> columnList = new ArrayList<>();
@@ -44,7 +44,7 @@ public class AliasEntityMeta<T> implements IEntityMeta<T> {
 	}
 	
 	private void buildAlias(List<Field> allFields, List<ColumnMeta> columnList, Map<String, ColumnMeta> columnMap,
-			IMetaFactory metaFactory) {
+			IOrmFactory metaFactory) {
         //列信息
         for (Field field : allFields) {
             ColumnMeta columnMeta = metaFactory.newColumnMeta(field);

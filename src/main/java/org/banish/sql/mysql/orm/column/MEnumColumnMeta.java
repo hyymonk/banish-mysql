@@ -19,7 +19,7 @@ public class MEnumColumnMeta extends ColumnMeta {
 	private final int length;
 	private Method method;
 	
-	protected MEnumColumnMeta(Field field) {
+	public MEnumColumnMeta(Field field) {
 		super(field);
 		Column column = field.getAnnotation(Column.class);
 		if(column != null) {

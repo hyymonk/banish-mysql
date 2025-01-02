@@ -20,6 +20,11 @@ public class PostgreSqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T
 	public PostgreSqlDefaultDML(EntityMeta<T> entityMeta) {
 		super(entityMeta);
 	}
+	
+	@Override
+	protected String dot() {
+		return "\"";
+	}
 
 	/**
 	 * PostgreSql使用insertUpdate特性后会导致自增序列发生跳跃，需谨慎使用
@@ -83,10 +88,4 @@ public class PostgreSqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T
 		}
 		return sql.toString();
 	}
-	
-	@Override
-	protected String dot() {
-		return "\"";
-	}
-	
 }

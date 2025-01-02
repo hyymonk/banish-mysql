@@ -17,7 +17,7 @@ public class MFloatColumnMeta extends ColumnMeta {
 	
 	private final String[] extra;
 	
-	protected MFloatColumnMeta(Field field) {
+	public MFloatColumnMeta(Field field) {
 		super(field);
 		Column column = field.getAnnotation(Column.class);
 		if(column != null) {

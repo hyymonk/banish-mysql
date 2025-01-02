@@ -14,7 +14,7 @@ import org.banish.sql.core.sql.SplitDML;
 /**
  * @author YY
  */
-public interface IMetaFactory {
+public interface IOrmFactory {
 
 	IDDL newDDL(IDataSource dataSource, boolean autoBuild);
 	

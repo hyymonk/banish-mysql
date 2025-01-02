@@ -43,7 +43,7 @@ public class SplitEntityMeta<T extends AbstractEntity> extends EntityMeta<T> {
 	
 	private final SplitWay splitWay;
 	
-	public SplitEntityMeta(Class<T> clazz, IMetaFactory metaFactory) {
+	public SplitEntityMeta(Class<T> clazz, IOrmFactory metaFactory) {
 		super(clazz, new SplitTableInfo(clazz.getAnnotation(SplitTable.class)), metaFactory);
 		
 		//分表的元数据信息

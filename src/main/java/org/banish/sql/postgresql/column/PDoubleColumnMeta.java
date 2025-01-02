@@ -1,11 +1,10 @@
 /**
  * 
  */
-package org.banish.sql.postgresql.orm.column;
+package org.banish.sql.postgresql.column;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 
 import org.banish.sql.core.orm.ColumnMeta;
 
@@ -13,37 +12,34 @@ import org.banish.sql.core.orm.ColumnMeta;
  * @author YY
  *
  */
-public class PLocalDateTimeColumnMeta extends ColumnMeta {
-
-	protected PLocalDateTimeColumnMeta(Field field) {
+public class PDoubleColumnMeta extends ColumnMeta {
+	
+	public PDoubleColumnMeta(Field field) {
 		super(field);
 	}
 
 	@Override
 	public Object takeValue(Object t) throws Exception {
-		return field.get(t);
+		return field.getDouble(t);
 	}
 
 	@Override
 	public void fillValue(Object t, int columnIndex, ResultSet rs) throws Exception {
-		Timestamp timestamp = rs.getTimestamp(columnIndex);
-		if(timestamp != null) {
-			field.set(t, timestamp.toLocalDateTime());
-		}
+		field.set(t, rs.getDouble(columnIndex));
 	}
-
+	
 	@Override
 	public String dbColumnType() {
-		return "timestamp";
+		return "float8";
 	}
 	
 	@Override
 	public String defaultValue() {
-		return "";
+		return "DEFAULT 0";
 	}
 	
 	@Override
 	public boolean isChange(String dbColumnType, String dbColumnExtra) {
-		return !dbColumnType.startsWith("timestamp");
+		return !dbColumnType.startsWith("float8");
 	}
 }

@@ -18,6 +18,11 @@ public class MySqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T> {
 	public MySqlDefaultDML(EntityMeta<T> entityMeta) {
 		super(entityMeta);
 	}
+	
+	@Override
+	protected String dot() {
+		return "`";
+	}
 
 	public String insertUpdate(EntityMeta<T> entityMeta, int dataCount) {
 		StringBuilder sql = new StringBuilder();
@@ -68,10 +73,4 @@ public class MySqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T> {
 		}
 		return sql.toString();
 	}
-	
-	@Override
-	protected String dot() {
-		return "`";
-	}
-	
 }

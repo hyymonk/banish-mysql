@@ -14,7 +14,7 @@ import org.banish.sql.core.orm.ColumnMeta;
  */
 public class MIntegerColumnMeta extends ColumnMeta {
 	
-	protected MIntegerColumnMeta(Field field) {
+	public MIntegerColumnMeta(Field field) {
 		super(field);
 	}
 
