@@ -28,7 +28,7 @@ public class MySqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T> {
 		StringBuilder sql = new StringBuilder();
 		sql.append(String.format("INSERT INTO `%s` (", TABLE_NAME));
 		boolean isFirst = true;
-		for(ColumnMeta column : entityMeta.getColumnList()) {
+		for(ColumnMeta column : entityMeta.getInsertColumnList()) {
 			if(!isFirst) {
 				sql.append(",");
 			}
@@ -45,7 +45,7 @@ public class MySqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T> {
 			
 			boolean firstColumn = true;
 			sql.append("(");
-			for(int i = 0; i < entityMeta.getColumnList().size(); i++) {
+			for(int i = 0; i < entityMeta.getInsertColumnList().size(); i++) {
 				if(!firstColumn) {
 					sql.append(",");
 				}
@@ -58,7 +58,7 @@ public class MySqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T> {
 		}
 		sql.append(" ON DUPLICATE KEY UPDATE ");
 		isFirst = true;
-		for (ColumnMeta columnMeta : entityMeta.getColumnList()) {
+		for (ColumnMeta columnMeta : entityMeta.getInsertColumnList()) {
 			if (columnMeta == entityMeta.getPrimaryKeyMeta()) {
 				continue;
 			}
