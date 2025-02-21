@@ -47,6 +47,10 @@ public class QuerySet {
 	public void addCondition(String filter, Object... values) {
 		conditions.add(new QueryCondition(filter, values));
 	}
+	
+	public void like(String columnName, String value) {
+		conditions.add(new QueryCondition(columnName + " like ?", "%" + value + "%"));
+	}
 
 	public void findInSet(String columnName, Collection<?> values) {
 		conditions.add(new QueryCondition("FIND_IN_SET(" + columnName + ", ?)", QuerySet.join(values, ",")));
