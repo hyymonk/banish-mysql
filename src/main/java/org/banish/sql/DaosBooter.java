@@ -73,7 +73,7 @@ public class DaosBooter {
 		this.valueFormaters.add(valueFormater);
 	}
 	
-	public void setup() {
+	public Daos setup() {
 		TableBuilder.SERVER_IDENTITY = tableBaseZone;
 		
 		//添加值格式化方式
@@ -118,6 +118,7 @@ public class DaosBooter {
 			}
 		}
 		DaosBooter.INSTANCE.setupRuntimeDaos(runtimeDaos, asyncPoolSize);
+		return DaosBooter.INSTANCE;
 	}
 	
 	public static void stopAsync() {
@@ -265,9 +266,9 @@ public class DaosBooter {
 		 * 获取所有的运行期Dao
 		 * @return
 		 */
-		public static List<OriginDao<?>> allDaos() {
+		public List<OriginDao<?>> allDaos() {
 			List<OriginDao<?>> allDaos = new ArrayList<>();
-			for(Map<Class<?>, OriginDao<?>> daoMap : INSTANCE.RUNTIME_DAOS.values()) {
+			for(Map<Class<?>, OriginDao<?>> daoMap : this.RUNTIME_DAOS.values()) {
 				for(OriginDao<?> baseDao : daoMap.values()) {
 					allDaos.add(baseDao);
 				}
