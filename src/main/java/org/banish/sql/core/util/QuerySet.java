@@ -55,6 +55,11 @@ public class QuerySet {
 	public void findInSet(String columnName, Collection<?> values) {
 		conditions.add(new QueryCondition("FIND_IN_SET(" + columnName + ", ?)", QuerySet.join(values, ",")));
 	}
+	
+	public void in(String columnName, Collection<?> values) {
+		String inClause = values.stream().map(id -> "?").reduce((a, b) -> a + "," + b).orElse("");
+		conditions.add(new QueryCondition(columnName + " in (" + inClause + ")", values.toArray()));
+	}
 
 	public void orderBy(String orderBy) {
 		this.orderBy = orderBy;
