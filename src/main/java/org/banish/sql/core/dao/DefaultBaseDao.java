@@ -54,6 +54,15 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 	}
 	
 	/**
+	 * 合并数据库时的插入
+	 */
+	@Override
+	public void mergeInsertAll(List<T> ts) {
+		String sql = this.sql.MERGE_INSERT;
+		super.mergeInsertAll(ts, sql);
+	}
+	
+	/**
 	 * 根据数据的ID进行更新
 	 * @param ts
 	 */

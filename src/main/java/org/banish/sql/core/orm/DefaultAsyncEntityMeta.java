@@ -27,7 +27,7 @@ public class DefaultAsyncEntityMeta<T extends AbstractEntity> extends DefaultEnt
 		this.asyncType = table.asyncType();
 		this.asyncSize = table.asyncSize();
 		this.asyncDelay = table.asyncDelay();
-		this.asyncName = table.name();
+		this.asyncName = this.getTableName();
 		this.updateType = table.updateType();
 	}
 	

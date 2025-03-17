@@ -63,6 +63,38 @@ public abstract class IDML<T> {
 	}
 	
 	/**
+	 * 构建合服插入语句
+	 * @param entityMeta
+	 * @param tableName
+	 * @return
+	 */
+	protected final String buildMergeInsertSql(EntityMeta<?> entityMeta, String tableName) {
+		StringBuilder sql = new StringBuilder();
+		sql.append(String.format("INSERT INTO %s%s%s (", dot(), tableName, dot()));
+		boolean isFirst = true;
+		
+		for(ColumnMeta column : entityMeta.getColumnList()) {
+			if(!isFirst) {
+				sql.append(",");
+			}
+			sql.append(String.format("%s%s%s", dot(), column.getColumnName(), dot()));
+			isFirst = false;
+		}
+		sql.append(") VALUES (");
+		isFirst = true;
+		for(int i = 0; i < entityMeta.getColumnList().size(); i++) {
+			if(!isFirst) {
+				sql.append(",");
+			}
+			sql.append("?");
+			isFirst = false;
+		}
+		sql.append(")");
+		return sql.toString();
+	}
+	
+	
+	/**
 	 * 构建更新语句
 	 * @param entityMeta
 	 * @param tableName

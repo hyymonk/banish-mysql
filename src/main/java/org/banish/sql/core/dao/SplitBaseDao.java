@@ -121,6 +121,12 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 		String sql = sqlTemplate.insert();
 		super.insertAllWithIdentityId(ts, sql);
 	}
+	
+	
+	@Override
+	public void mergeInsertAll(List<T> ts) {
+		throw new UnsupportedOperationException("当前版本还不支持的操作");
+	}
 
 	@Override
 	public void updateAll(List<T> ts) {

@@ -25,7 +25,7 @@ public class SplitAsyncEntityMeta<T extends AbstractEntity> extends SplitEntityM
 		this.asyncType = table.asyncType();
 		this.asyncSize = table.asyncSize();
 		this.asyncDelay = table.asyncDelay();
-		this.asyncName = table.name();
+		this.asyncName = this.getTableName();
 	}
 
 	@Override

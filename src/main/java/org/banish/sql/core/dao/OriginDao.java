@@ -133,6 +133,7 @@ public abstract class OriginDao<T extends AbstractEntity> {
 			insertAllWithIdentityId(ts);
 		}
 	}
+	
 	/**
 	 * 插入所有具有自增ID属性的数据
 	 * @param ts 必须要求是列表，以保证返回的ID数组顺序与列表对象顺序一致
@@ -210,6 +211,42 @@ public abstract class OriginDao<T extends AbstractEntity> {
 			Dao.close(null, statement, connection);
 		}
 	}
+	
+	public abstract void mergeInsertAll(List<T> ts);
+	
+	protected final void mergeInsertAll(List<T> ts, String sql) {
+		if(ts.isEmpty()) {
+			return;
+		}
+		Connection connection = null;
+		PreparedStatement statement = null;
+		try {
+			connection = this.dataSource.getConnection();
+			statement = connection.prepareStatement(sql);
+			
+			LocalDateTime now = LocalDateTime.now();
+			for(int j = 0; j < ts.size(); j++) {
+				T t = ts.get(j);
+				t.setInsertTime(now);
+				t.setUpdateTime(now);
+				for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
+					ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);
+					Object obj = columnMeta.takeValue(t);
+					statement.setObject(i + 1, obj);
+				}
+				statement.addBatch();
+			}
+			//批量插入
+			statement.executeBatch();
+		} catch (Exception e) {
+			logger.error("{}.mergeInsertAll error with sql {}", this.getEntityMeta().getTableName(), sql);
+			throw new RuntimeException(e);
+		} finally {
+			Dao.close(null, statement, connection);
+		}
+	}
+	
+	
 	
 	public abstract void insertUpdate(List<T> ts);
 	

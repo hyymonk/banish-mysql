@@ -62,6 +62,10 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	 */
 	private final List<ColumnMeta> columnList;
 	/**
+	 * 用于插入语句时的元数据
+	 */
+	private final List<ColumnMeta> insertColumnList;
+	/**
 	 * 字段（及数据库字段并列）索引
 	 */
 	private final Map<String, ColumnMeta> columnMap;
@@ -73,10 +77,6 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	 * 实体类属性名与数据列名的对应关系
 	 */
 	private final Map<String, String> fieldToColumn;
-	/**
-	 * 用于插入语句时的元数据
-	 */
-	private final List<ColumnMeta> insertColumnList;
 	
 	private final IOrmFactory ormFactory;
 	

@@ -14,6 +14,7 @@ public abstract class DefaultDML<T extends AbstractEntity> extends IDML<T> {
 	public final String SELECT;
 	public final String SELECT_ALL;
 	public final String INSERT;
+	public final String MERGE_INSERT;
 	public final String UPDATE;
 	public final String DELETE;
 	public final String DELETE_ALL;
@@ -25,6 +26,7 @@ public abstract class DefaultDML<T extends AbstractEntity> extends IDML<T> {
 		SELECT = select(entityMeta);
 		SELECT_ALL = buildSelectAll(TABLE_NAME);
 		INSERT = buildInsertSql(entityMeta, TABLE_NAME);
+		MERGE_INSERT = buildMergeInsertSql(entityMeta, TABLE_NAME);
 		UPDATE = buildUpdateSql(entityMeta, TABLE_NAME);
 		DELETE = buildDeleteSql(entityMeta, TABLE_NAME);
 		DELETE_ALL = deleteAll(entityMeta);
