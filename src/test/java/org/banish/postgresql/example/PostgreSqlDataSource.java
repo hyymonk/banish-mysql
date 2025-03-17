@@ -72,6 +72,7 @@ public class PostgreSqlDataSource implements IDataSource {
 		return dbConfig;
 	}
 
+	@Override
 	public void close() {
 		dataSource.close();
 	}

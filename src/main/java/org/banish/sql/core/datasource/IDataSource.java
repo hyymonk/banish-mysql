@@ -34,4 +34,6 @@ public interface IDataSource {
 	String getAlias();
 	
 	IOrmFactory getMetaFactory();
+	
+	void close();
 }
