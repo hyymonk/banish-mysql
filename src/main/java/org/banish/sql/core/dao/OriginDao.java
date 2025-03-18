@@ -224,11 +224,8 @@ public abstract class OriginDao<T extends AbstractEntity> {
 			connection = this.dataSource.getConnection();
 			statement = connection.prepareStatement(sql);
 			
-			LocalDateTime now = LocalDateTime.now();
 			for(int j = 0; j < ts.size(); j++) {
 				T t = ts.get(j);
-				t.setInsertTime(now);
-				t.setUpdateTime(now);
 				for(int i = 0; i < getEntityMeta().getColumnList().size(); i++) {
 					ColumnMeta columnMeta = getEntityMeta().getColumnList().get(i);
 					Object obj = columnMeta.takeValue(t);
