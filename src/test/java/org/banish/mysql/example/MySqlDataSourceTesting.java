@@ -6,7 +6,7 @@ package org.banish.mysql.example;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.banish.DBConfig;
+import org.banish.DBConfigTesting;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.orm.IOrmFactory;
 import org.banish.sql.mysql.MySqlOrmFactory;
@@ -17,12 +17,12 @@ import com.alibaba.druid.pool.DruidDataSource;
  * @author YY
  *
  */
-public class MySqlDataSource implements IDataSource {
+public class MySqlDataSourceTesting implements IDataSource {
 	
-	private DBConfig dbConfig;
+	private DBConfigTesting dbConfig;
 	private DruidDataSource dataSource;
 	
-	public MySqlDataSource(DBConfig dbConfig) {
+	public MySqlDataSourceTesting(DBConfigTesting dbConfig) {
 		this.dbConfig = dbConfig;
 		this.dataSource = createDataSource();
 		try {
@@ -68,7 +68,7 @@ public class MySqlDataSource implements IDataSource {
 		return dataSource;
 	}
 
-	public DBConfig getDbConfig() {
+	public DBConfigTesting getDbConfig() {
 		return dbConfig;
 	}
 

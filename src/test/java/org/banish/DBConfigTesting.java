@@ -6,7 +6,7 @@ package org.banish;
 /**
  * @author YY
  */
-public class DBConfig {
+public class DBConfigTesting {
 	/**
 	 * 服务器ID
 	 */

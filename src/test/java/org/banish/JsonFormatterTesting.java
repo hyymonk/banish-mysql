@@ -31,7 +31,7 @@ import com.google.gson.stream.JsonWriter;
  * @author YY
  *
  */
-public class JsonFormatter implements ValueFormatter {
+public class JsonFormatterTesting implements ValueFormatter {
 	
 	public static Gson gson = null;
 	static {
