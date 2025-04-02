@@ -5,6 +5,7 @@ package org.banish.sql.core.dao;
 
 import java.util.List;
 
+import org.banish.sql.core.IIDIniter;
 import org.banish.sql.core.annotation.enuma.UpdateType;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
@@ -22,8 +23,8 @@ public class DefaultAsyncDao<T extends AbstractEntity> extends DefaultBaseDao<T>
 	
 	private AsyncDaoPlugin<T> asyncDaoPlugin;
 	
-	public DefaultAsyncDao(IDataSource dataSource, DefaultAsyncEntityMeta<T> entityMeta) {
-		super(dataSource, entityMeta);
+	public DefaultAsyncDao(IDataSource dataSource, DefaultAsyncEntityMeta<T> entityMeta, IIDIniter idIniter) {
+		super(dataSource, entityMeta, idIniter);
 		this.asyncMeta = entityMeta;
 		if(entityMeta.getUpdateType() == UpdateType.UPDATE) {
 			this.asyncDaoPlugin = new AsyncDaoPlugin<T>(this);

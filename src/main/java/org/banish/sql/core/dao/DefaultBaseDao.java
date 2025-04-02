@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.banish.sql.core.IIDIniter;
 import org.banish.sql.core.builder.TableBuilder;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
@@ -27,8 +28,8 @@ public abstract class DefaultBaseDao<T extends AbstractEntity> extends OriginDao
 	
 	private DefaultDML<T> sql;
 	
-	public DefaultBaseDao(IDataSource dataSource, EntityMeta<T> entityMeta) {
-		super(dataSource, entityMeta);
+	public DefaultBaseDao(IDataSource dataSource, EntityMeta<T> entityMeta, IIDIniter idIniter) {
+		super(dataSource, entityMeta, idIniter);
 		this.sql = dataSource.getMetaFactory().newDefaultDML(entityMeta);
 		//自动建表
 		TableBuilder.build(this, entityMeta.getTableName());

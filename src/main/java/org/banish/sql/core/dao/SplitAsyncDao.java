@@ -5,6 +5,7 @@ package org.banish.sql.core.dao;
 
 import java.util.List;
 
+import org.banish.sql.core.IIDIniter;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.ColumnMeta;
@@ -21,8 +22,8 @@ public class SplitAsyncDao<T extends AbstractEntity> extends SplitBaseDao<T> imp
 	
 	private AsyncDaoPlugin<T> asyncDaoPlugin;
 	
-	public SplitAsyncDao(IDataSource dataSource, SplitAsyncEntityMeta<T> entityMeta) {
-		super(dataSource, entityMeta);
+	public SplitAsyncDao(IDataSource dataSource, SplitAsyncEntityMeta<T> entityMeta, IIDIniter idIniter) {
+		super(dataSource, entityMeta, idIniter);
 		this.asyncMeta = entityMeta;
 		this.asyncDaoPlugin = new AsyncDaoPlugin<T>(this);
 	}

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.banish.sql.core.IIDIniter;
 import org.banish.sql.core.annotation.SplitTable;
 import org.banish.sql.core.annotation.Table;
 import org.banish.sql.core.annotation.enuma.AsyncType;
@@ -52,6 +53,7 @@ public class DaosBooter {
 	private List<Class<? extends AbstractEntity>> entityClasses = new ArrayList<>();
 	private int asyncPoolSize = 4;
 	private List<ValueFormatter> valueFormaters = new ArrayList<>();
+	private Map<Class<? extends AbstractEntity>, IIDIniter> idIniters = new HashMap<>();
 	
 	public DaosBooter(int tableBaseZone) {
 		this.tableBaseZone = tableBaseZone;
@@ -72,6 +74,10 @@ public class DaosBooter {
 	public void addValueFormater(ValueFormatter valueFormater) {
 		this.valueFormaters.add(valueFormater);
 	}
+	public void addIdIniter(Class<? extends AbstractEntity> entityClass, IIDIniter idIniter) {
+		this.idIniters.put(entityClass, idIniter);
+	}
+	
 	
 	public Daos setup() {
 		TableBuilder.SERVER_IDENTITY = tableBaseZone;
@@ -102,7 +108,8 @@ public class DaosBooter {
 			Collections.sort(clazzList, CLAZZ_SORTER);
 			for(Class<? extends AbstractEntity> clazz : clazzList) {
 				EntityMeta<?> entityMeta = buildMeta(clazz, dataSource.getMetaFactory());
-				OriginDao<?> runtimeDao = buildRuntimeDao(entityMeta, dataSource);
+				IIDIniter idIniter = idIniters.get(clazz);
+				OriginDao<?> runtimeDao = buildRuntimeDao(dataSource, entityMeta, idIniter);
 				
 				int zoneId = dataSource.getZoneId();
 				Map<Class<?>, OriginDao<?>> zoneDaos = runtimeDaos.get(zoneId);
@@ -185,21 +192,21 @@ public class DaosBooter {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private OriginDao<?> buildRuntimeDao(EntityMeta<?> entityMeta, IDataSource dataSource) {
+	private OriginDao<?> buildRuntimeDao(IDataSource dataSource, EntityMeta<?> entityMeta, IIDIniter idIniter) {
 		//通过实体类对应的数据库与元数据信息，动态地创建出该实体类对应的Dao对象
 		OriginDao<?> runtimeDao = null;
 		
 		if(entityMeta instanceof DefaultAsyncEntityMeta) {
-			runtimeDao = new DefaultAsyncDao(dataSource, (DefaultAsyncEntityMeta)entityMeta);
+			runtimeDao = new DefaultAsyncDao(dataSource, (DefaultAsyncEntityMeta)entityMeta, idIniter);
 			
 		} else if(entityMeta instanceof DefaultEntityMeta) {
-			runtimeDao = new DefaultSyncDao(dataSource, (DefaultEntityMeta)entityMeta);
+			runtimeDao = new DefaultSyncDao(dataSource, (DefaultEntityMeta)entityMeta, idIniter);
 			
 		} else if(entityMeta instanceof SplitAsyncEntityMeta) {
-			runtimeDao = new SplitAsyncDao(dataSource, (SplitAsyncEntityMeta)entityMeta);
+			runtimeDao = new SplitAsyncDao(dataSource, (SplitAsyncEntityMeta)entityMeta, idIniter);
 			
 		} else if(entityMeta instanceof SplitEntityMeta) {
-			runtimeDao = new SplitSyncDao(dataSource, (SplitEntityMeta)entityMeta);
+			runtimeDao = new SplitSyncDao(dataSource, (SplitEntityMeta)entityMeta, idIniter);
 			
 		} else {
 			panic("This situation will never happen");

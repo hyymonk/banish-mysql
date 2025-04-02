@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.banish.sql.core.IIDIniter;
 import org.banish.sql.core.annotation.enuma.SplitWay;
 import org.banish.sql.core.builder.TableBuilder;
 import org.banish.sql.core.datasource.IDataSource;
@@ -34,8 +35,8 @@ public abstract class SplitBaseDao<T extends AbstractEntity> extends OriginDao<T
 	
 	private IDDL iddl;
 	
-	public SplitBaseDao(IDataSource dataSource, SplitEntityMeta<T> entityMeta) {
-		super(dataSource, entityMeta);
+	public SplitBaseDao(IDataSource dataSource, SplitEntityMeta<T> entityMeta, IIDIniter idIniter) {
+		super(dataSource, entityMeta, idIniter);
 		this.logEntityMeta = entityMeta;
 		//创建Dao对象的时候检查当前时间对应的表
 		SplitWay splitWay = entityMeta.getSplitWay();

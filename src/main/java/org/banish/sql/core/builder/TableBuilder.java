@@ -55,7 +55,7 @@ public class TableBuilder {
 		//更新索引
 		updateIndex(iddl, tableName, tablExist, entityMeta.getIndexMap());
 		//更新自增主键
-		updateAutoIncrement(iddl, tableName, tablExist, entityMeta);
+		updateAutoIncrement(iddl, tableName, tablExist, entityMeta, dao.getIdStartWith());
 		
 		if(!entityMeta.isAutoBuild() && !iddl.getDDLs().isEmpty()) {
 			for(String ddlSql : iddl.getDDLs()) {
@@ -199,7 +199,8 @@ public class TableBuilder {
 	 * 更新自增主键
 	 * @param baseDao
 	 */
-	private static void updateAutoIncrement(IDDL iddl, String tableName, boolean tableExist, EntityMeta<?> entityMeta) {
+	private static void updateAutoIncrement(IDDL iddl, String tableName, boolean tableExist, EntityMeta<?> entityMeta,
+			long idStartWith) {
 		IPrimaryKeyColumnMeta keyMeta = entityMeta.getPrimaryKeyMeta();
 		if(keyMeta.getStrategy() != Strategy.AUTO) {
 			return;
@@ -207,7 +208,7 @@ public class TableBuilder {
 		if(tableExist) {
 			if(!iddl.hasAutoIncrement(tableName, keyMeta.getColumnName())) {
 				//业务开发定义的自增主键
-				long customInitId = entityMeta.getCustomInitId();
+				long customInitId = idStartWith;
 				if(customInitId > 0) {
 					customInitId = customInitId + 1;
 				} else {
@@ -228,7 +229,7 @@ public class TableBuilder {
 					finalMaxId = currMaxId + 1;
 				}
 				//业务开发定义的自增主键
-				long customInitId = entityMeta.getCustomInitId();
+				long customInitId = idStartWith;
 				if(customInitId > 0) {
 					customInitId = customInitId + 1;
 				} else {
@@ -252,7 +253,7 @@ public class TableBuilder {
 			}
 		} else {
 			//业务开发定义的自增主键
-			long customInitId = entityMeta.getCustomInitId();
+			long customInitId = idStartWith;
 			if(customInitId > 0) {
 				customInitId = customInitId + 1;
 			} else {

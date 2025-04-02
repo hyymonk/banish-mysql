@@ -227,19 +227,6 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	public boolean isAutoBuild() {
 		return autoBuild;
 	}
-	
-	public long getCustomInitId() {
-		Class<T> clazz = this.getClazz();
-		long customInitId = 0;
-		try {
-			T entity = clazz.getConstructor().newInstance();
-			customInitId = entity.idGenerator();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return customInitId;
-	}
-
 
 	public List<ColumnMeta> getInsertColumnList() {
 		return insertColumnList;

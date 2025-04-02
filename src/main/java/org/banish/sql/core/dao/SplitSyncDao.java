@@ -3,6 +3,7 @@
  */
 package org.banish.sql.core.dao;
 
+import org.banish.sql.core.IIDIniter;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.SplitEntityMeta;
@@ -13,7 +14,7 @@ import org.banish.sql.core.orm.SplitEntityMeta;
  */
 public class SplitSyncDao<T extends AbstractEntity> extends SplitBaseDao<T> {
 	
-	public SplitSyncDao(IDataSource dataSource, SplitEntityMeta<T> entityMeta) {
-		super(dataSource, entityMeta);
+	public SplitSyncDao(IDataSource dataSource, SplitEntityMeta<T> entityMeta, IIDIniter idIniter) {
+		super(dataSource, entityMeta, idIniter);
 	}
 }

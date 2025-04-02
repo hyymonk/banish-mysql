@@ -32,8 +32,4 @@ public abstract class AbstractEntity {
 	public final void setUpdateTime(LocalDateTime updateTime) {
 		this.updateTime = updateTime;
 	}
-	//ID生成器
-	public long idGenerator() {
-		return 0;
-	}
 }

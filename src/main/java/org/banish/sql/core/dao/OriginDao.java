@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.banish.sql.core.IIDIniter;
 import org.banish.sql.core.annotation.Id.Strategy;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
@@ -31,6 +32,7 @@ public abstract class OriginDao<T extends AbstractEntity> {
 	
 	private IDataSource dataSource;
 	private final EntityMeta<T> entityMeta;
+	private IIDIniter idIniter;
 	protected int slowTime = 50;
 	
 	/**
@@ -38,9 +40,10 @@ public abstract class OriginDao<T extends AbstractEntity> {
 	 * @param dataBase
 	 * @param entityMeta 约束子类进行entityMeta的输入
 	 */
-	public OriginDao(IDataSource dataSource, EntityMeta<T> entityMeta) {
+	public OriginDao(IDataSource dataSource, EntityMeta<T> entityMeta, IIDIniter idIniter) {
 		this.dataSource = dataSource;
 		this.entityMeta = entityMeta;
+		this.idIniter = idIniter;
 	}
 	
 	protected abstract IDML<T> getSql(T t);
@@ -484,5 +487,9 @@ public abstract class OriginDao<T extends AbstractEntity> {
 	
 	protected T formObject(IEntityMeta<T> entityMeta, ResultSet rs, boolean useAlias) {
 		return Dao.formObject(entityMeta, rs, useAlias);
+	}
+	
+	public long getIdStartWith() {
+		return this.idIniter == null ? 0 : this.idIniter.startWith();
 	}
 }
