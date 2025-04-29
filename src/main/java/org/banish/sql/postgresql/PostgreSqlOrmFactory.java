@@ -107,10 +107,14 @@ public class PostgreSqlOrmFactory implements IOrmFactory {
 	}
 
 	@Override
-	public String formatIndexName(String tableName, String[] fieldNames) {
+	public String formatIndexName(String tableName, String indexAlias, String[] fieldNames) {
 		String indexName = tableName + "_idx";
-		for (String fieldName : fieldNames) {
-			indexName += "_" + IEntityMeta.makeSnakeCase(fieldName);
+		if(indexAlias.equals("")) {
+			for (String fieldName : fieldNames) {
+				indexName += "_" + IEntityMeta.makeSnakeCase(fieldName);
+			}
+		} else {
+			indexName += "_" + indexAlias;
 		}
 		return indexName;
 	}

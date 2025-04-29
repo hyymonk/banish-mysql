@@ -22,27 +22,27 @@ import org.banish.sql.core.annotation.enuma.IndexWay;
 @Target(ElementType.TYPE)
 public @interface Index {
 	/**
-	 * 索引名字
+	 * 索引别名
 	 * 
 	 * @return
 	 */
-//	public abstract String name();
+	String alias() default "";
 	/**
 	 * 索引使用到的类字段名（不是数据库的列名）
 	 * 
 	 * @return
 	 */
-	public abstract String[] fields();
+	String[] fields();
 	/**
 	 * 索引的类型
 	 * 
 	 * @return
 	 */
-	public abstract IndexType type() default IndexType.NORMAL;
+	IndexType type() default IndexType.NORMAL;
 	/**
 	 * 索引的方式
 	 * 
 	 * @return
 	 */
-	public abstract IndexWay way() default IndexWay.BTREE;
+	IndexWay way() default IndexWay.BTREE;
 }

@@ -26,5 +26,5 @@ public interface IOrmFactory {
 	
 	IPrimaryKeyColumnMeta newPrimaryKeyColumnMeta(Field field);
 	
-	String formatIndexName(String tableName, String[] fieldNames);
+	String formatIndexName(String tableName, String indexAlias, String[] fieldNames);
 }
