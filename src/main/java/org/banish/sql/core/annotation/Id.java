@@ -22,12 +22,12 @@ public @interface Id {
 	 * ID生成策略
 	 * @return
 	 */
-	public Strategy strategy();
+	Strategy strategy();
 	/**
 	 * 当ID策略为auto时的自增基数
 	 * @return
 	 */
-	public abstract long autoBase() default 1000000000L;
+	long autoBase() default 1000000000L;
 	
 	public enum Strategy {
 		/**
