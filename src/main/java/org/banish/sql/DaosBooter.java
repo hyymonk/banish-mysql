@@ -98,6 +98,8 @@ public class DaosBooter {
 			}
 		}
 		
+		//<表名，类名>
+		Map<String, String> checkDuplicateTables = new HashMap<>();
 		//用于保存所有运行期Dao的集合
 		Map<Integer, Map<Class<?>, OriginDao<?>>> runtimeDaos = new HashMap<>();
 		for(IDataSource dataSource : dataSources) {
@@ -108,6 +110,14 @@ public class DaosBooter {
 			Collections.sort(clazzList, CLAZZ_SORTER);
 			for(Class<? extends AbstractEntity> clazz : clazzList) {
 				EntityMeta<?> entityMeta = buildMeta(clazz, dataSource.getMetaFactory());
+				
+				String clazzName = checkDuplicateTables.get(entityMeta.getTableName());
+				if(clazzName == null) {
+					checkDuplicateTables.put(entityMeta.getTableName(), clazz.getSimpleName());
+				} else if(!clazzName.equals(clazz.getSimpleName())) {
+					 panic("Class %s has duplicate table name with class %s", clazz.getSimpleName(), clazzName);
+				}
+				
 				IIDIniter idIniter = idIniters.get(clazz);
 				OriginDao<?> runtimeDao = buildRuntimeDao(dataSource, entityMeta, idIniter);
 				
