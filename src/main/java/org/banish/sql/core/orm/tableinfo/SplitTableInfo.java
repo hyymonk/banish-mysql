@@ -24,7 +24,7 @@ public class SplitTableInfo implements ITable {
 	private final int asyncSize;
 	private final int asyncDelay;
 	private final SplitWay way;
-	private final String byColumn;
+	private final String byField;
 	
 	public SplitTableInfo(SplitTable table) {
 		this.name = table.name();
@@ -36,7 +36,7 @@ public class SplitTableInfo implements ITable {
 		this.asyncSize = table.asyncSize();
 		this.asyncDelay = table.asyncDelay();
 		this.way = table.way();
-		this.byColumn = table.byColumn();
+		this.byField = table.byField();
 	}
 	
 	@Override
@@ -83,8 +83,8 @@ public class SplitTableInfo implements ITable {
 		return way;
 	}
 
-	public String byColumn() {
-		return byColumn;
+	public String byField() {
+		return byField;
 	}
 
 	@Override

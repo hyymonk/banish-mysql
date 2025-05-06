@@ -67,8 +67,8 @@ public @interface SplitTable {
 	 */
 	SplitWay way() default SplitWay.MONTH;
 	/**
-	 * 以哪一列为分表依据
+	 * 以哪个类属性为分表依据
 	 * @return
 	 */
-	String byColumn();
+	String byField();
 }

@@ -66,7 +66,7 @@ public abstract class EntityMeta<T extends AbstractEntity> implements IEntityMet
 	 */
 	private final List<ColumnMeta> insertColumnList;
 	/**
-	 * 字段（及数据库字段并列）索引
+	 * 字段（即数据库字段列）索引
 	 */
 	private final Map<String, ColumnMeta> columnMap;
 	/**

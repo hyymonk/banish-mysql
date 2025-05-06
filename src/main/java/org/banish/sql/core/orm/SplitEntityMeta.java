@@ -43,10 +43,11 @@ public class SplitEntityMeta<T extends AbstractEntity> extends EntityMeta<T> {
 		
 		if(splitTable != null) {
 			this.splitWay = splitTable.way();
-			ColumnMeta splitingMeta = this.getColumnMap().get(splitTable.byColumn());
+			String columnName = this.getColumnName(splitTable.byField());
+			ColumnMeta splitingMeta = this.getColumnMeta(columnName);
 			if(splitingMeta == null) {
 				throw new RuntimeException(
-						clazz.getSimpleName() + " can not find @TimeTable column named " + splitTable.byColumn());
+						clazz.getSimpleName() + " can not find @SplitTable field named " + splitTable.byField());
 			}
 			if(this.splitWay == SplitWay.NULL) {
 				this.splitMeta = null;
