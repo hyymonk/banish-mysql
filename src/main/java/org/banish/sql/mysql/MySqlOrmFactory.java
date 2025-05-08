@@ -108,7 +108,7 @@ public class MySqlOrmFactory implements IOrmFactory {
     }
 	
 	@Override
-	public String formatIndexName(String tableName, String indexAlias, String[] fieldNames) {
+	public String formatIndexName(String indexAlias, String[] fieldNames) {
 		String indexName = "idx";
 		if(indexAlias.equals("")) {
 			for (String fieldName : fieldNames) {

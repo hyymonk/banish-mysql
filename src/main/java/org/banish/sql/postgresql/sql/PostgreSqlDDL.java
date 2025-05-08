@@ -91,7 +91,8 @@ public class PostgreSqlDDL implements IDDL {
 	
 	@Override
 	public List<? extends IIndexStruct> getKeys(String tableName) {
-		return Dao.queryAliasObjects(dataSource, IndexStruct.class, SHOW_KEYS, tableName);
+		List<IndexStruct> result = Dao.queryAliasObjects(dataSource, IndexStruct.class, SHOW_KEYS, tableName);
+		return result;
 	}
 	
 	public static class IndexStruct implements IIndexStruct {
@@ -121,6 +122,11 @@ public class PostgreSqlDDL implements IDDL {
 		}
 		public String getColumnName() {
 			return columnName;
+		}
+		@Override
+		public String toString() {
+			return "IndexStruct [name=" + name + ", unique=" + unique + ", primary=" + primary + ", way=" + way
+					+ ", columnName=" + columnName + "]";
 		}
 	}
 	
@@ -223,10 +229,10 @@ public class PostgreSqlDDL implements IDDL {
 	@Override
 	public String getTableAddIndex(String tableName, IndexMeta indexMeta) {
 		if(indexMeta.getType() == IndexType.UNIQUE) {
-			return String.format(TABLE_ADD_UNIQUE_INDEX, indexMeta.getName(), tableName,
+			return String.format(TABLE_ADD_UNIQUE_INDEX, indexMeta.getRealName(), tableName,
 					indexMeta.getWay().value(), indexMeta.getColumnsString("\""));
 		} else {
-			return String.format(TABLE_ADD_INDEX, indexMeta.getName(), tableName,
+			return String.format(TABLE_ADD_INDEX, indexMeta.getRealName(), tableName,
 					indexMeta.getWay().value(), indexMeta.getColumnsString("\""));
 		}
 	}
@@ -238,7 +244,7 @@ public class PostgreSqlDDL implements IDDL {
 	
 	@Override
 	public String getTableModifyIndex(String tableName, IndexMeta indexMeta) {
-		String dropIndex = String.format(TABLE_DROP_INDEX, indexMeta.getName());
+		String dropIndex = String.format(TABLE_DROP_INDEX, indexMeta.getRealName());
 		return dropIndex + getTableAddIndex(tableName, indexMeta);
 	}
 	

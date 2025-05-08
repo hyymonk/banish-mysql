@@ -19,18 +19,13 @@ import org.banish.sql.core.orm.tableinfo.ITable;
  *
  */
 public class IndexMeta {
-	private String name;
+	//在解释类注解时生成的名字（不带表名前缀）
+	private String rawName;
+	//结合表名的索引名字，即实际在数据库创建索引时使用的名字
+	private String realName;
 	private List<String> columns = new ArrayList<>();
 	private IndexType type;
 	private IndexWay way;
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public IndexType getType() {
 		return type;
@@ -91,7 +86,7 @@ public class IndexMeta {
 		Map<String, String> fieldsMap = new HashMap<>();
 		// 表注解上定义的索引
 		for (Index index : allIndexes) {
-			String indexName = ormFactory.formatIndexName(tableName, index.alias(), index.fields());
+			String indexName = ormFactory.formatIndexName(index.alias(), index.fields());
 			if (indexMap.containsKey(indexName)) {
 				throw new RuntimeException("实体类[" + tableName + "]中名字为[" + indexName + "]的索引被重复定义");
 			}
@@ -99,9 +94,9 @@ public class IndexMeta {
 			if (fieldsMap.containsKey(useFields)) {
 				throw new RuntimeException("实体类[" + tableName + "]中名字为[" + indexName + "]的索引被重复定义");
 			}
-
+			//此时的索引名字还不具有表名的前缀
 			IndexMeta tableIndex = new IndexMeta();
-			tableIndex.setName(indexName);
+			tableIndex.setRawName(indexName);
 			for (String fieldName : index.fields()) {
 				String columnName = fieldToColumn.get(fieldName);
 				if (columnName == null) {
@@ -111,10 +106,26 @@ public class IndexMeta {
 			}
 			tableIndex.setType(index.type());
 			tableIndex.setWay(index.way());
-			indexMap.put(tableIndex.getName(), tableIndex);
+			indexMap.put(tableIndex.getRawName(), tableIndex);
 			fieldsMap.put(useFields, indexName);
 		}
 		return indexMap;
+	}
+
+	public String getRawName() {
+		return rawName;
+	}
+
+	public void setRawName(String rawName) {
+		this.rawName = rawName;
+	}
+
+	public String getRealName() {
+		return realName;
+	}
+
+	public void setRealName(String realName) {
+		this.realName = realName;
 	}
 
 }

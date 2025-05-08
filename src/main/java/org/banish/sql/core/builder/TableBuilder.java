@@ -135,13 +135,23 @@ public class TableBuilder {
 	 * @param entityIndexes 实体类中定义的索引<索引名字，索引对象>
 	 */
 	private static void updateIndex(IDDL iddl, String tableName, boolean tablExist, Map<String, IndexMeta> entityIndexes) {
+		for(IndexMeta entityIndex : entityIndexes.values()) {
+			String realName = tableName + "_" + entityIndex.getRawName();
+			entityIndex.setRealName(realName);
+			//Mysql和PostgreSql都对索引的名字长度有限制，太长会被截断
+			if(entityIndex.getRealName().length() > 60) {
+				String errorMsg = String.format("数据表%s的索引%s名字过长，无法添加到数据库", tableName, realName);
+				throw new RuntimeException(errorMsg);
+			}
+		}
+		
 		if(tablExist) {
 			// 数据表中已有的索引<索引名字，索引对象>
 			Map<String, IndexMeta> indexMap = getDbIndex(iddl, tableName);
 			
 			// 以实体类为基准比对数据表中的索引状态
 			for(IndexMeta entityIndex : entityIndexes.values()) {
-				IndexMeta dbIndex = indexMap.get(entityIndex.getName());
+				IndexMeta dbIndex = indexMap.get(entityIndex.getRealName());
 				if(dbIndex == null) {
 					//添加索引
 					String ddlSql = iddl.getTableAddIndex(tableName, entityIndex);
@@ -181,7 +191,7 @@ public class TableBuilder {
 			IndexMeta index = indexMap.get(indexName);
 			if(index == null) {
 				index = new IndexMeta();
-				index.setName(indexName);
+				index.setRealName(indexName);
 				//索引的类型
 				index.setType(indexStruct.isUnique() ? IndexType.UNIQUE : IndexType.NORMAL);
 				//索引的方式

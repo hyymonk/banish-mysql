@@ -56,5 +56,5 @@ public interface IOrmFactory {
 	 * @param fieldNames
 	 * @return
 	 */
-	String formatIndexName(String tableName, String indexAlias, String[] fieldNames);
+	String formatIndexName(String indexAlias, String[] fieldNames);
 }

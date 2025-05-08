@@ -183,7 +183,7 @@ public class MySqlDDL implements IDDL {
 	
 	@Override
 	public String getTableAddIndex(String tableName, IndexMeta indexMeta) {
-		return String.format(TABLE_ADD_INDEX, tableName, indexMeta.getType().value(), indexMeta.getName(),
+		return String.format(TABLE_ADD_INDEX, tableName, indexMeta.getType().value(), indexMeta.getRealName(),
 				indexMeta.getColumnsString("`"), indexMeta.getWay().value());
 	}
 	
@@ -194,7 +194,7 @@ public class MySqlDDL implements IDDL {
 
 	@Override
 	public String getTableModifyIndex(String tableName, IndexMeta indexMeta) {
-		return String.format(TABLE_MODIFY_INDEX, tableName, indexMeta.getName(), indexMeta.getType().value(), indexMeta.getName(),
+		return String.format(TABLE_MODIFY_INDEX, tableName, indexMeta.getRealName(), indexMeta.getType().value(), indexMeta.getRealName(),
 				indexMeta.getColumnsString("`"), indexMeta.getWay().value());
 	}
 	
