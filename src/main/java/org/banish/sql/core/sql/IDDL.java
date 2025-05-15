@@ -109,8 +109,18 @@ public interface IDDL {
 	 * @return
 	 */
 	List<String> createAutoIncrement(String tableName, IPrimaryKeyColumnMeta primaryKey, long startWith);
-	
+	/**
+	 * 是否已经有自增序列
+	 * @param tableName
+	 * @param primaryKeyName
+	 * @return
+	 */
 	boolean hasAutoIncrement(String tableName, String primaryKeyName);
-	
+	/**
+	 * 自增序列是否发生了变化
+	 * @param tableName
+	 * @param primaryKey
+	 * @return
+	 */
 	boolean checkAutoIncrement(String tableName, IPrimaryKeyColumnMeta primaryKey);
 }

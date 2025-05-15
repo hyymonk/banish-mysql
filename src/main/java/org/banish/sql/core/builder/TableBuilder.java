@@ -63,7 +63,7 @@ public class TableBuilder {
 						dao.getDataSource().getAlias(), tableName, ddlSql);
 				logger.warn(errorMsg);
 			}
-			String errorMsg = String.format("在别名为%s数据库中需要对名字为%s的表格进行修正，请参考上述日志",
+			String errorMsg = String.format("在别名为%s的数据库中需要对名字为%s的表格进行修正，请参考上述日志",
 					dao.getDataSource().getAlias(), tableName);
 			logger.warn(errorMsg);
 //			throw new RuntimeException(errorMsg);

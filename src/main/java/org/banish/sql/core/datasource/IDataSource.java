@@ -32,8 +32,19 @@ public interface IDataSource {
 	 * @return
 	 */
 	String getAlias();
-	
+	/**
+	 * 元数据工厂
+	 * @return
+	 */
 	IOrmFactory getMetaFactory();
-	
+	/**
+	 * 关闭数据源
+	 */
 	void close();
+	/**
+	 * 数据表是否存在
+	 * @param tableName
+	 * @return
+	 */
+	boolean isTableExist(String tableName);
 }

@@ -12,7 +12,6 @@ import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.entity.AbstractEntity;
 import org.banish.sql.core.orm.ColumnMeta;
 import org.banish.sql.core.orm.EntityMeta;
-import org.banish.sql.core.orm.IEntityMeta;
 import org.banish.sql.core.orm.IOrmFactory;
 import org.banish.sql.core.orm.IPrimaryKeyColumnMeta;
 import org.banish.sql.core.sql.DefaultDML;
@@ -104,18 +103,5 @@ public class PostgreSqlOrmFactory implements IOrmFactory {
 	@Override
 	public IPrimaryKeyColumnMeta newPrimaryKeyColumnMeta(Field field) {
 		return new PPrimaryKeyColumnMeta(field);
-	}
-
-	@Override
-	public String formatIndexName(String indexAlias, String[] fieldNames) {
-		String indexName = "idx";
-		if(indexAlias.equals("")) {
-			for (String fieldName : fieldNames) {
-				indexName += "_" + IEntityMeta.makeSnakeCase(fieldName);
-			}
-		} else {
-			indexName += "_" + indexAlias;
-		}
-		return indexName;
 	}
 }

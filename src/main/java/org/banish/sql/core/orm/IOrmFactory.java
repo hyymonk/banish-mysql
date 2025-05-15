@@ -49,12 +49,4 @@ public interface IOrmFactory {
 	 * @return
 	 */
 	IPrimaryKeyColumnMeta newPrimaryKeyColumnMeta(Field field);
-	/**
-	 * 格式化索引名字
-	 * @param tableName
-	 * @param indexAlias
-	 * @param fieldNames
-	 * @return
-	 */
-	String formatIndexName(String indexAlias, String[] fieldNames);
 }

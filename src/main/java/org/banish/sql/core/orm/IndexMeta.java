@@ -65,7 +65,7 @@ public class IndexMeta {
 	}
 
 	public static Map<String, IndexMeta> build(Class<?> clazz, ITable table, String tableName,
-			Map<String, String> fieldToColumn, IOrmFactory ormFactory) {
+			Map<String, String> fieldToColumn) {
 		List<Index> allIndexes = new ArrayList<>();
 		
 		Class<?> currClazz = clazz;
@@ -86,7 +86,7 @@ public class IndexMeta {
 		Map<String, String> fieldsMap = new HashMap<>();
 		// 表注解上定义的索引
 		for (Index index : allIndexes) {
-			String indexName = ormFactory.formatIndexName(index.alias(), index.fields());
+			String indexName = formatIndexName(index.alias(), index.fields());
 			if (indexMap.containsKey(indexName)) {
 				throw new RuntimeException("实体类[" + tableName + "]中名字为[" + indexName + "]的索引被重复定义");
 			}
@@ -110,6 +110,24 @@ public class IndexMeta {
 			fieldsMap.put(useFields, indexName);
 		}
 		return indexMap;
+	}
+	
+	/**
+	 * 格式化索引名字
+	 * @param indexAlias
+	 * @param fieldNames
+	 * @return
+	 */
+	private static String formatIndexName(String indexAlias, String[] fieldNames) {
+		String indexName = "idx";
+		if(indexAlias.equals("")) {
+			for (String fieldName : fieldNames) {
+				indexName += "_" + IEntityMeta.makeSnakeCase(fieldName);
+			}
+		} else {
+			indexName += "_" + indexAlias;
+		}
+		return indexName;
 	}
 
 	public String getRawName() {

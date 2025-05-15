@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import org.banish.DBConfigTesting;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.orm.IOrmFactory;
+import org.banish.sql.core.sql.IDDL;
 import org.banish.sql.mysql.MySqlOrmFactory;
 
 import com.alibaba.druid.pool.DruidDataSource;
@@ -99,5 +100,11 @@ public class MySqlDataSourceTesting implements IDataSource {
 	@Override
 	public IOrmFactory getMetaFactory() {
 		return MySqlOrmFactory.INS;
+	}
+	
+	@Override
+	public boolean isTableExist(String tableName) {
+		IDDL iddl = this.getMetaFactory().newDDL(this, false);
+		return iddl.isTableExist(tableName);
 	}
 }

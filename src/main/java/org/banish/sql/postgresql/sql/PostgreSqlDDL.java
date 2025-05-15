@@ -347,6 +347,7 @@ public class PostgreSqlDDL implements IDDL {
 	 * @param primaryKey
 	 * @return
 	 */
+	@Override
 	public boolean checkAutoIncrement(String tableName, IPrimaryKeyColumnMeta primaryKey) {
 		String seqName = String.format("%s_%s_seq", tableName, primaryKey.getColumnName());
 		TableSeq tableSeq = Dao.queryAliasObject(dataSource, TableSeq.class, TABLE_QUERY_SEQ, seqName);
