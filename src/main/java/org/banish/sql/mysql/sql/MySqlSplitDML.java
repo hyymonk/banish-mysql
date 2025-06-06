@@ -14,11 +14,6 @@ import org.banish.sql.core.sql.SplitDML;
 public class MySqlSplitDML<T extends AbstractEntity> extends SplitDML<T> {
 
 	public MySqlSplitDML(EntityMeta<T> entityMeta, String tableName) {
-		super(entityMeta, tableName);
-	}
-
-	@Override
-	protected String dot() {
-		return "`";
+		super(entityMeta, tableName, "`");
 	}
 }

@@ -12,6 +12,10 @@ import org.banish.sql.core.orm.EntityMeta;
  *
  */
 public abstract class IDML<T> {
+	/**
+	 * 数据库中用于标识字段、表名的引号
+	 */
+	protected final String dot;
 	
 	public abstract String insert();
 	
@@ -19,7 +23,9 @@ public abstract class IDML<T> {
 	
 	public abstract String delete();
 	
-	protected abstract String dot();
+	public IDML(String dot) {
+		this.dot = dot;
+	}
 	
 	/**
 	 * 构建插入语句
@@ -29,7 +35,7 @@ public abstract class IDML<T> {
 	 */
 	protected final String buildInsertSql(EntityMeta<?> entityMeta, String tableName) {
 		StringBuilder sql = new StringBuilder();
-		sql.append(String.format("INSERT INTO %s%s%s (", dot(), tableName, dot()));
+		sql.append(String.format("INSERT INTO %s%s%s (", dot, tableName, dot));
 		boolean isFirst = true;
 		
 		boolean isAutoIncrement = false;
@@ -43,7 +49,7 @@ public abstract class IDML<T> {
 			if(!isFirst) {
 				sql.append(",");
 			}
-			sql.append(String.format("%s%s%s", dot(), column.getColumnName(), dot()));
+			sql.append(String.format("%s%s%s", dot, column.getColumnName(), dot));
 			isFirst = false;
 		}
 		sql.append(") VALUES (");
@@ -70,14 +76,14 @@ public abstract class IDML<T> {
 	 */
 	protected final String buildMergeInsertSql(EntityMeta<?> entityMeta, String tableName) {
 		StringBuilder sql = new StringBuilder();
-		sql.append(String.format("INSERT INTO %s%s%s (", dot(), tableName, dot()));
+		sql.append(String.format("INSERT INTO %s%s%s (", dot, tableName, dot));
 		boolean isFirst = true;
 		
 		for(ColumnMeta column : entityMeta.getColumnList()) {
 			if(!isFirst) {
 				sql.append(",");
 			}
-			sql.append(String.format("%s%s%s", dot(), column.getColumnName(), dot()));
+			sql.append(String.format("%s%s%s", dot, column.getColumnName(), dot));
 			isFirst = false;
 		}
 		sql.append(") VALUES (");
@@ -102,7 +108,7 @@ public abstract class IDML<T> {
 	 */
 	protected final String buildUpdateSql(EntityMeta<?> entityMeta, String tableName) {
 		StringBuilder sql = new StringBuilder();
-		sql.append(String.format("UPDATE %s%s%s SET ", dot(), tableName, dot()));
+		sql.append(String.format("UPDATE %s%s%s SET ", dot, tableName, dot));
 		boolean isFirst = true;
 		for(ColumnMeta column : entityMeta.getColumnList()) {
 			if(column.isReadonly()) {
@@ -114,10 +120,10 @@ public abstract class IDML<T> {
 			if(!isFirst) {
 				sql.append(",");
 			}
-			sql.append(String.format("%s%s%s=?", dot(), column.getColumnName(), dot()));
+			sql.append(String.format("%s%s%s=?", dot, column.getColumnName(), dot));
 			isFirst = false;
 		}
-		sql.append(String.format(" WHERE %s%s%s=?", dot(), entityMeta.getPrimaryKeyMeta().getColumnName(), dot()));
+		sql.append(String.format(" WHERE %s%s%s=?", dot, entityMeta.getPrimaryKeyMeta().getColumnName(), dot));
 		return sql.toString();
 	}
 	
@@ -128,7 +134,7 @@ public abstract class IDML<T> {
 	 * @return
 	 */
 	protected final String buildDeleteSql(EntityMeta<?> entityMeta, String tableName) {
-		return String.format("DELETE FROM %s%s%s WHERE %s%s%s=?", dot(), tableName, dot(), dot(), entityMeta.getPrimaryKeyMeta().getColumnName(), dot());
+		return String.format("DELETE FROM %s%s%s WHERE %s%s%s=?", dot, tableName, dot, dot, entityMeta.getPrimaryKeyMeta().getColumnName(), dot);
 	}
 	
 	/**
@@ -137,7 +143,7 @@ public abstract class IDML<T> {
 	 * @return
 	 */
 	protected final String buildSelectAll(String tableName) {
-		return String.format("SELECT * FROM %s%s%s", dot(), tableName, dot());
+		return String.format("SELECT * FROM %s%s%s", dot, tableName, dot);
 	}
 	
 	/**
@@ -146,6 +152,6 @@ public abstract class IDML<T> {
 	 * @return
 	 */
 	protected final String buildCountAll(String tableName) {
-		return String.format("SELECT count(1) AS number FROM %s%s%s", dot(), tableName, dot());
+		return String.format("SELECT count(1) AS number FROM %s%s%s", dot, tableName, dot);
 	}
 }

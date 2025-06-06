@@ -18,7 +18,8 @@ public abstract class SplitDML<T extends AbstractEntity> extends IDML<T> {
 	public final String DELETE;
 	public final String COUNT_ALL;
 	
-	public SplitDML(EntityMeta<T> entityMeta, String tableName) {
+	public SplitDML(EntityMeta<T> entityMeta, String tableName, String dot) {
+		super(dot);
 		this.TABLE_NAME = tableName;
 		
 //		SELECT = select(entityMeta);

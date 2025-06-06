@@ -20,7 +20,8 @@ public abstract class DefaultDML<T extends AbstractEntity> extends IDML<T> {
 	public final String DELETE_ALL;
 	public final String COUNT_ALL;
 	
-	public DefaultDML(EntityMeta<T> entityMeta) {
+	public DefaultDML(EntityMeta<T> entityMeta, String dot) {
+		super(dot);
 		TABLE_NAME = entityMeta.getTableName();
 		
 		SELECT = select(entityMeta);
@@ -47,7 +48,7 @@ public abstract class DefaultDML<T extends AbstractEntity> extends IDML<T> {
 	 * @return
 	 */
 	private String select(EntityMeta<T> entityMeta) {
-		return String.format("SELECT * FROM %s%s%s WHERE %s%s%s=?", dot(), TABLE_NAME, dot(), dot(), entityMeta.getPrimaryKeyMeta().getColumnName(), dot());
+		return String.format("SELECT * FROM %s%s%s WHERE %s%s%s=?", dot, TABLE_NAME, dot, dot, entityMeta.getPrimaryKeyMeta().getColumnName(), dot);
 	}
 	/**
 	 * 删除某个表所有数据的SQL
@@ -55,7 +56,7 @@ public abstract class DefaultDML<T extends AbstractEntity> extends IDML<T> {
 	 * @return
 	 */
 	private String deleteAll(EntityMeta<T> entityMeta) {
-		return String.format("DELETE FROM %s%s%s", dot(), TABLE_NAME, dot());
+		return String.format("DELETE FROM %s%s%s", dot, TABLE_NAME, dot);
 	}
 	
 	@Override

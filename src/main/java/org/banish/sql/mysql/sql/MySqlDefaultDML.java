@@ -16,12 +16,7 @@ import org.banish.sql.core.sql.DefaultDML;
 public class MySqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T> {
 	
 	public MySqlDefaultDML(EntityMeta<T> entityMeta) {
-		super(entityMeta);
-	}
-	
-	@Override
-	protected String dot() {
-		return "`";
+		super(entityMeta, "`");
 	}
 
 	public String insertUpdate(EntityMeta<T> entityMeta, int dataCount) {

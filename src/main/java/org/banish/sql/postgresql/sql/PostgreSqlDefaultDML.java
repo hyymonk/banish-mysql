@@ -18,12 +18,7 @@ import org.banish.sql.core.sql.DefaultDML;
 public class PostgreSqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T> {
 	
 	public PostgreSqlDefaultDML(EntityMeta<T> entityMeta) {
-		super(entityMeta);
-	}
-	
-	@Override
-	protected String dot() {
-		return "\"";
+		super(entityMeta, "\"");
 	}
 
 	/**
@@ -73,7 +68,7 @@ public class PostgreSqlDefaultDML<T extends AbstractEntity> extends DefaultDML<T
 		}
 		
 		if(uniqueIndex != null) {
-			sql.append(String.format(" ON CONFLICT (%s) DO UPDATE SET ", uniqueIndex.getColumnsString(this.dot())));
+			sql.append(String.format(" ON CONFLICT (%s) DO UPDATE SET ", uniqueIndex.getColumnsString(dot)));
 		} else {
 			sql.append(String.format(" ON CONFLICT (%s) DO UPDATE SET ", entityMeta.getPrimaryKeyMeta().getColumnName()));
 		}
