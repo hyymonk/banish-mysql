@@ -3,6 +3,7 @@
  */
 package org.banish.sql.core.util;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,6 +47,16 @@ public class QuerySet {
 	 */
 	public void addCondition(String filter, Object... values) {
 		conditions.add(new QueryCondition(filter, values));
+	}
+	
+	/**
+	 * 
+	 * @param filter
+	 * @param value 必须是yyyy-mm-dd hh:mm:ss格式
+	 * 			postgreSql比mysql的类型检测严格很多，在对时间戳的列进行查询时，必须用Timestamp类型进行传参
+	 */
+	public void addTimestamp(String filter, String value) {
+		conditions.add(new QueryCondition(filter, Timestamp.valueOf(value)));
 	}
 	
 	public void like(String columnName, String value) {
