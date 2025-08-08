@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.banish.sql.core.datasource.DbMode;
+
 /**
  * @author YY
  *
@@ -25,6 +27,7 @@ public class QuerySet {
 		}
 	}
 
+	private final DbMode dbMode;
 	private final List<QueryCondition> conditions = new ArrayList<>();
 	private int page; // 从1开始
 	private int pageSize;
@@ -36,6 +39,13 @@ public class QuerySet {
 
 	private String countWhere;
 	private Object[] countParams;
+	
+	public QuerySet() {
+		this(DbMode.MYSQL);
+	}
+	public QuerySet(DbMode dbMode) {
+		this.dbMode = dbMode;
+	}
 
 	public void addCondition(QueryCondition condition) {
 		conditions.add(condition);
@@ -60,7 +70,11 @@ public class QuerySet {
 	}
 	
 	public void like(String columnName, String value) {
-		conditions.add(new QueryCondition(columnName + " like ?", "%" + value + "%"));
+		if(dbMode == DbMode.POSTGRESQL) {
+			conditions.add(new QueryCondition(columnName + "::text like ?", "%" + value + "%"));
+		} else {
+			conditions.add(new QueryCondition(columnName + " like ?", "%" + value + "%"));
+		}
 	}
 
 	public void findInSet(String columnName, Collection<?> values) {

@@ -47,4 +47,9 @@ public interface IDataSource {
 	 * @return
 	 */
 	boolean isTableExist(String tableName);
+	/**
+	 * 数据库的模式
+	 * @return
+	 */
+	DbMode dbMode();
 }

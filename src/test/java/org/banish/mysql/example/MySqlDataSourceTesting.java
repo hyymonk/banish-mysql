@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.banish.DBConfigTesting;
+import org.banish.sql.core.datasource.DbMode;
 import org.banish.sql.core.datasource.IDataSource;
 import org.banish.sql.core.orm.IOrmFactory;
 import org.banish.sql.core.sql.IDDL;
@@ -106,5 +107,10 @@ public class MySqlDataSourceTesting implements IDataSource {
 	public boolean isTableExist(String tableName) {
 		IDDL iddl = this.getMetaFactory().newDDL(this, false);
 		return iddl.isTableExist(tableName);
+	}
+
+	@Override
+	public DbMode dbMode() {
+		return DbMode.MYSQL;
 	}
 }
